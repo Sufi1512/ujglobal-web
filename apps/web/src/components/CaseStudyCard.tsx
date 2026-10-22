@@ -4,7 +4,7 @@ import type { CaseStudyCard as Card } from "@/lib/content";
 /** Demo projects are always labelled, so nobody mistakes in-house work for client work. */
 export function DemoBadge() {
   return (
-    <span className="inline-block rounded-full border border-accent/40 bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-cyan-700 dark:text-accent">
+    <span className="inline-block rounded-full border border-foreground px-2.5 py-0.5 text-xs font-semibold text-foreground">
       Demo project
     </span>
   );
@@ -16,7 +16,7 @@ export function CaseStudyCard({ study, headingLevel = 3 }: { study: Card; headin
   return (
     <Link
       href={`/work/${study.slug}`}
-      className="flex h-full flex-col rounded-2xl border border-line p-6 transition hover:border-brand"
+      className="flex h-full flex-col rounded-2xl border border-line p-6 transition hover:border-link"
     >
       <div className="flex flex-wrap items-center gap-2">
         {study.is_demo ? <DemoBadge /> : study.client_name && <span className="text-xs text-muted">{study.client_name}</span>}
@@ -25,7 +25,7 @@ export function CaseStudyCard({ study, headingLevel = 3 }: { study: Card; headin
       {study.summary && <p className="mt-2 text-sm text-muted">{study.summary}</p>}
       {topResult && (
         <p className="mt-4 text-sm">
-          <span className="font-display text-2xl font-semibold text-brand">{topResult.metric}</span>{" "}
+          <span className="font-display text-2xl font-semibold text-link">{topResult.metric}</span>{" "}
           <span className="text-muted">{topResult.label}</span>
         </p>
       )}

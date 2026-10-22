@@ -63,7 +63,7 @@ export default async function CaseStudyPage({ params }: Props) {
             {study.results.map((r) => (
               <div key={r.label} className="flex flex-col rounded-2xl border border-line p-5">
                 <dt className="text-sm text-muted">{r.label}</dt>
-                <dd className="order-first font-display text-3xl font-semibold text-brand">{r.metric}</dd>
+                <dd className="order-first font-display text-3xl font-semibold text-link">{r.metric}</dd>
               </div>
             ))}
           </dl>
@@ -101,7 +101,7 @@ export default async function CaseStudyPage({ params }: Props) {
             ))}
             {study.services.map((s) => (
               <li key={s.slug}>
-                <Link href={`/services/${s.slug}`} className="inline-block rounded-full bg-brand/10 px-3 py-1 text-sm text-brand hover:underline">
+                <Link href={`/services/${s.slug}`} className="inline-block rounded-full bg-brand/10 px-3 py-1 text-sm text-link hover:underline">
                   {s.title}
                 </Link>
               </li>
@@ -112,7 +112,7 @@ export default async function CaseStudyPage({ params }: Props) {
 
       <div className="mt-14 flex flex-wrap gap-3">
         {study.live_url && (
-          <a href={study.live_url} rel="noopener" target="_blank" className="rounded-full border border-line px-6 py-3 font-medium hover:border-brand">
+          <a href={study.live_url} rel="noopener" target="_blank" className="rounded-full border border-line px-6 py-3 font-medium hover:border-link">
             {study.is_demo ? "Try the live demo" : "Visit the live site"}
           </a>
         )}

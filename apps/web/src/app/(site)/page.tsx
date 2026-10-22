@@ -14,19 +14,24 @@ export default async function Home() {
   const [services, featured] = await Promise.all([getServices(), getCaseStudies({ featured: true })]);
   return (
     <>
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-20 sm:pt-28">
-        <p className="text-sm font-medium text-brand">Technology consultancy</p>
-        <h1 className="mt-4 max-w-3xl font-display text-4xl font-semibold tracking-tight sm:text-6xl">
-          {site.tagline}
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">{site.description}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-medium text-white hover:opacity-90">
-            Get a quote
-          </Link>
-          <Link href="/services" className="rounded-full border border-line px-6 py-3 font-medium hover:border-brand">
-            Explore services
-          </Link>
+      <section className="border-b border-line bg-mist">
+        <div className="mx-auto max-w-6xl px-4 pb-20 pt-20 sm:pt-28">
+          <p className="inline-block rounded-full bg-signal px-3 py-1 text-sm font-semibold text-on-signal">
+            Technology consultancy
+          </p>
+          <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-6xl">{site.tagline}</h1>
+          <p className="mt-6 max-w-2xl text-lg text-muted">{site.description}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-semibold text-white hover:opacity-90">
+              Get a quote
+            </Link>
+            <Link
+              href="/services"
+              className="rounded-full border border-line bg-background px-6 py-3 font-semibold hover:border-link"
+            >
+              Explore services
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -39,7 +44,7 @@ export default async function Home() {
             <li key={s.slug}>
               <Link
                 href={`/services/${s.slug}`}
-                className="block h-full rounded-2xl border border-line p-6 transition hover:border-brand"
+                className="block h-full rounded-2xl border border-line p-6 transition hover:border-link"
               >
                 <h3 className="font-display text-lg font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm text-muted">{s.summary}</p>
@@ -55,7 +60,7 @@ export default async function Home() {
             <h2 id="work-heading" className="font-display text-3xl font-semibold">
               Featured work
             </h2>
-            <Link href="/work" className="text-sm font-medium text-brand hover:underline">
+            <Link href="/work" className="text-sm font-medium text-link hover:underline">
               See all work
             </Link>
           </div>
@@ -76,7 +81,7 @@ export default async function Home() {
         <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
             <li key={step.title} className="rounded-2xl border border-line p-6">
-              <span className="text-sm font-medium text-accent">0{i + 1}</span>
+              <span className="text-sm font-semibold text-link">0{i + 1}</span>
               <h3 className="mt-2 font-display text-lg font-semibold">{step.title}</h3>
               <p className="mt-2 text-sm text-muted">{step.text}</p>
             </li>
@@ -87,10 +92,11 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="rounded-3xl bg-brand px-8 py-12 text-white sm:px-12">
           <h2 className="font-display text-3xl font-semibold">Have a project in mind?</h2>
-          <p className="mt-3 max-w-xl text-white/80">
+          <p className="mt-3 max-w-xl text-white">
             Tell us what you want to build. We reply within one business day with next steps and a quote.
           </p>
-          <Link href="/contact" className="mt-6 inline-block rounded-full bg-white px-6 py-3 font-medium text-brand">
+          {/* Fixed white button: brand blue text reads well on white in both themes (6.2:1). */}
+          <Link href="/contact" className="mt-6 inline-block rounded-full bg-white px-6 py-3 font-semibold text-brand">
             Start a conversation
           </Link>
         </div>

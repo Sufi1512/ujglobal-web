@@ -75,7 +75,7 @@ export function EditorShell({
             {state.saving ? "Saving…" : dirty ? "Unsaved changes" : state.savedAt ? `Saved ${state.savedAt.toLocaleTimeString()}` : ""}
           </span>
           {publicPath && savedStatus === "published" && (
-            <a href={publicPath} target="_blank" rel="noopener" className="rounded-full border border-line px-4 py-2 hover:border-brand">
+            <a href={publicPath} target="_blank" rel="noopener" className="rounded-full border border-line px-4 py-2 hover:border-link">
               View on site ↗
             </a>
           )}
@@ -148,7 +148,7 @@ export function EditorShell({
                   </div>
                 </div>
               ) : (
-                <button type="button" onClick={() => setConfirming(true)} className="text-sm text-red-600 underline">
+                <button type="button" onClick={() => setConfirming(true)} className="text-sm text-red-600 dark:text-red-400 underline">
                   Delete this draft
                 </button>
               )}

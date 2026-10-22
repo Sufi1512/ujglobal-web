@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -16,6 +16,14 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: site.name, url: site.url },
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
+};
+
+// Browser toolbar colour on phones, matching the page background in each theme.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1128" },
+  ],
 };
 
 // The public site (app/(site)) and the admin panel (app/admin) each add their own chrome.

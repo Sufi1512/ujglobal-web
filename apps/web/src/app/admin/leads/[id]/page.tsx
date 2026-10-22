@@ -63,7 +63,7 @@ export default function LeadDetailPage() {
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           {error}
         </p>
-        <Link href="/admin/leads" className="mt-4 inline-block text-sm text-brand underline">
+        <Link href="/admin/leads" className="mt-4 inline-block text-sm text-link underline">
           Back to leads
         </Link>
       </div>
@@ -75,7 +75,7 @@ export default function LeadDetailPage() {
   }
 
   const utm = Object.entries(lead.utm ?? {});
-  const control = "mt-1 block w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-brand";
+  const control = "mt-1 block w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-link";
 
   return (
     <>
@@ -120,7 +120,7 @@ export default function LeadDetailPage() {
                 maxLength={5000}
                 rows={3}
                 placeholder="Call summary, next step, anything the team should know"
-                className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+                className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-link"
               />
               <button
                 type="submit"
@@ -181,13 +181,13 @@ export default function LeadDetailPage() {
 
           <dl className="space-y-4 rounded-xl border border-line p-6">
             <Field label="Email">
-              <a href={`mailto:${lead.email}`} className="text-brand underline">
+              <a href={`mailto:${lead.email}`} className="text-link underline">
                 {lead.email}
               </a>
             </Field>
             {lead.phone && (
               <Field label="Phone">
-                <a href={`tel:${lead.phone}`} className="text-brand underline">
+                <a href={`tel:${lead.phone}`} className="text-link underline">
                   {lead.phone}
                 </a>
               </Field>

@@ -8,7 +8,7 @@ import { useEffect, useId, useState } from "react";
  */
 
 export const inputClass =
-  "mt-1 block w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-brand";
+  "mt-1 block w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-link";
 
 function border(error?: string) {
   return error ? "border-red-500" : "border-line";
@@ -184,7 +184,7 @@ export function TagListField({
           disabled={values.length >= max}
           className={`${inputClass} ${border(error)} mt-0`}
         />
-        <button type="button" onClick={add} className="rounded-lg border border-line px-3 text-sm hover:border-brand">
+        <button type="button" onClick={add} className="rounded-lg border border-line px-3 text-sm hover:border-link">
           Add
         </button>
       </div>
@@ -244,7 +244,7 @@ export function RowsField<T extends Record<string, string>>({
                 <button type="button" disabled={index === rows.length - 1} onClick={() => move(index, 1)} aria-label={`Move ${label} ${index + 1} down`} className="rounded px-2 py-0.5 hover:bg-foreground/10 disabled:opacity-30">
                   ↓
                 </button>
-                <button type="button" onClick={() => onChange(rows.filter((_, i) => i !== index))} aria-label={`Remove ${label} ${index + 1}`} className="rounded px-2 py-0.5 text-red-600 hover:bg-red-500/10">
+                <button type="button" onClick={() => onChange(rows.filter((_, i) => i !== index))} aria-label={`Remove ${label} ${index + 1}`} className="rounded px-2 py-0.5 text-red-600 dark:text-red-400 hover:bg-red-500/10">
                   Remove
                 </button>
               </span>
@@ -270,7 +270,7 @@ export function RowsField<T extends Record<string, string>>({
         type="button"
         disabled={rows.length >= max}
         onClick={() => onChange([...rows, { ...empty }])}
-        className="mt-3 rounded-lg border border-dashed border-line px-3 py-2 text-sm hover:border-brand disabled:opacity-40"
+        className="mt-3 rounded-lg border border-dashed border-line px-3 py-2 text-sm hover:border-link disabled:opacity-40"
       >
         + {addLabel}
       </button>
