@@ -47,4 +47,4 @@ cd apps/api && uv run alembic revision --autogenerate -m "describe the change" &
 
 Phase 0 scaffold: public pages (home, services, service detail, about, contact), SEO basics (metadata, JSON-LD,
 sitemap, robots), core database schema, and a contact endpoint that stores every submission as a lead.
-See the build plan for the remaining phases.
+See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases.
