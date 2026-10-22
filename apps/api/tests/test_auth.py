@@ -203,11 +203,18 @@ async def test_require_roles_allows_owner_and_listed_roles_only():
 
 async def test_cli_creates_a_user_that_can_log_in(client, monkeypatch):
     monkeypatch.setenv("ADMIN_PASSWORD", PASSWORD)
-    await create_user("new@ujglobal.tech", "New Owner", UserRole.owner)
+    await create_user(" New@UJGlobal.tech ", "New Owner", UserRole.owner)
     assert (await login(client, email="new@ujglobal.tech")).status_code == 200
 
     with pytest.raises(SystemExit):
         await create_user("new@ujglobal.tech", "Again", UserRole.owner)
+
+
+@pytest.mark.parametrize("email", ["not-an-email", "someone@example.test"])
+async def test_cli_rejects_emails_that_login_would_reject(monkeypatch, email):
+    monkeypatch.setenv("ADMIN_PASSWORD", PASSWORD)
+    with pytest.raises(SystemExit):
+        await create_user(email, "Nope", UserRole.editor)
 
 
 async def test_cli_rejects_short_passwords(monkeypatch):
