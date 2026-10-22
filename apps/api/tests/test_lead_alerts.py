@@ -243,7 +243,10 @@ def _redis_available() -> bool:
         return False
 
 
-@pytest.mark.skipif(not _redis_available(), reason="needs Redis (CI provides one)")
+# Skipped locally without Redis, but never in CI: there a missing Redis must fail the build.
+@pytest.mark.skipif(
+    not _redis_available() and not os.environ.get("CI"), reason="needs Redis (CI provides one)"
+)
 async def test_contact_form_to_inbox_through_redis_and_worker(
     client, settings, sent, monkeypatch, session_factory
 ):
