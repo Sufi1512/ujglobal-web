@@ -19,7 +19,7 @@ export default async function ServicesPage() {
       <ul className="mt-10 grid gap-4 sm:grid-cols-2">
         {services.map((s) => (
           <li key={s.slug}>
-            <Link href={`/services/${s.slug}`} className="block rounded-2xl border border-line p-6 hover:border-brand">
+            <Link href={`/services/${s.slug}`} className="block rounded-2xl border border-line p-6 hover:border-link">
               <h2 className="font-display text-xl font-semibold">{s.title}</h2>
               <p className="mt-2 text-sm text-muted">{s.summary}</p>
             </Link>

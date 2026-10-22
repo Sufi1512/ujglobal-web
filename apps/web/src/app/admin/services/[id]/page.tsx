@@ -18,7 +18,7 @@ export default function EditServicePage() {
     return (
       <div>
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        <Link href="/admin/services" className="mt-4 inline-block text-sm text-brand underline">Back to services</Link>
+        <Link href="/admin/services" className="mt-4 inline-block text-sm text-link underline">Back to services</Link>
       </div>
     );
   }

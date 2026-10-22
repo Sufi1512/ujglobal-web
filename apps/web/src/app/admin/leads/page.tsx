@@ -91,7 +91,7 @@ function Inbox() {
   const allCount = data ? Object.values(data.status_counts).reduce((sum, n) => sum + n, 0) : null;
   const pages = data ? Math.max(1, Math.ceil(data.total / data.page_size)) : 1;
   const page = filters.page ?? 1;
-  const control = "rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-brand";
+  const control = "rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-link";
 
   return (
     <>
@@ -104,7 +104,7 @@ function Inbox() {
           type="button"
           onClick={exportCsv}
           disabled={exporting || data?.total === 0}
-          className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand disabled:opacity-50"
+          className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-link disabled:opacity-50"
         >
           {exporting ? "Exporting…" : "Export CSV"}
         </button>
@@ -121,7 +121,7 @@ function Inbox() {
               onClick={() => update({ status })}
               aria-current={active ? "page" : undefined}
               className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm ${
-                active ? "border-brand font-medium" : "border-transparent text-muted hover:text-foreground"
+                active ? "border-link font-medium" : "border-transparent text-muted hover:text-foreground"
               }`}
             >
               {status ? STATUS_LABELS[status] : "All"}
@@ -240,7 +240,7 @@ function Inbox() {
             {data?.items.map((lead) => (
               <tr key={lead.id} className="border-b border-line last:border-0 hover:bg-foreground/[0.03]">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/leads/${lead.id}`} className="font-medium hover:text-brand">
+                  <Link href={`/admin/leads/${lead.id}`} className="font-medium hover:text-link">
                     {lead.name}
                   </Link>
                   <div className="text-xs text-muted">{lead.email}</div>

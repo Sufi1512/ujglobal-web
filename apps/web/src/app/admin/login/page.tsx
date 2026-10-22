@@ -35,7 +35,7 @@ function LoginForm() {
     }
   }
 
-  const field = "mt-1 w-full rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-brand";
+  const field = "mt-1 w-full rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-link";
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">

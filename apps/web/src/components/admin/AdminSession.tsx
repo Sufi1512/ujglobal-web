@@ -128,7 +128,7 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
               <span className="hidden text-muted sm:inline">
                 {user.name} · {user.role}
               </span>
-              <button type="button" onClick={signOut} className="rounded-md border border-line px-3 py-1.5 hover:border-brand">
+              <button type="button" onClick={signOut} className="rounded-md border border-line px-3 py-1.5 hover:border-link">
                 Sign out
               </button>
             </div>
@@ -143,7 +143,7 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
               <p className="mt-2 text-sm text-muted">
                 This section isn&apos;t part of the {user.role} role. Ask an owner if you need access.
               </p>
-              <Link href={homeFor(user.role)} className="mt-4 inline-block text-sm font-medium text-brand underline">
+              <Link href={homeFor(user.role)} className="mt-4 inline-block text-sm font-medium text-link underline">
                 Go to your admin home
               </Link>
             </div>

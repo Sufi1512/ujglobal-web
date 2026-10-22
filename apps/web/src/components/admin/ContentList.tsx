@@ -65,7 +65,7 @@ export function ContentList({
             {rows?.map((row) => (
               <tr key={row.id} className="border-b border-line last:border-0 hover:bg-foreground/[0.03]">
                 <td className="px-4 py-3">
-                  <Link href={`${editBase}/${row.id}`} className="font-medium hover:text-brand">
+                  <Link href={`${editBase}/${row.id}`} className="font-medium hover:text-link">
                     {row.title}
                   </Link>
                   <div className="text-xs text-muted">

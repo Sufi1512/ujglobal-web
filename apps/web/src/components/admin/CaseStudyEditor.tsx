@@ -136,7 +136,7 @@ export function CaseStudyEditor({ initial }: { initial: CaseStudy | null }) {
                 ))}
               </fieldset>
             )}
-            {errors.service_ids && <p className="text-xs text-red-600">{errors.service_ids}</p>}
+            {errors.service_ids && <p className="text-xs text-red-600 dark:text-red-400">{errors.service_ids}</p>}
           </Section>
         </>
       }

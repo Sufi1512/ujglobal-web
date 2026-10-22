@@ -18,7 +18,7 @@ export default function ContactPage() {
         </p>
         <p className="mt-6 text-sm">
           Prefer email?{" "}
-          <a href={`mailto:${site.email}`} className="text-brand underline">
+          <a href={`mailto:${site.email}`} className="text-link underline">
             {site.email}
           </a>
         </p>

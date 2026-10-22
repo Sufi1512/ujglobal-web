@@ -85,4 +85,5 @@ sitemap, robots), core database schema, and a contact endpoint that stores every
 Phase 1 in progress: admin auth (Argon2 passwords, JWT access tokens, rotating refresh cookie), the
 leads inbox at `/admin/leads`, new-lead alert emails sent by the background worker, and services and case
 studies managed through the admin API, with `/work` pages for the portfolio.
-See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases.
+See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases, and
+[docs/BRAND.md](docs/BRAND.md) for the brand (logo, colours, type).

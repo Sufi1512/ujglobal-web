@@ -67,7 +67,7 @@ export default async function ServicePage({ params }: Props) {
         / {service.title}
       </nav>
       <h1 className="mt-4 font-display text-4xl font-semibold">{service.title}</h1>
-      {service.tagline && <p className="mt-3 text-lg font-medium text-brand">{service.tagline}</p>}
+      {service.tagline && <p className="mt-3 text-lg font-medium text-link">{service.tagline}</p>}
       <p className="mt-4 text-lg text-muted">{service.summary}</p>
 
       {problem && (
@@ -100,7 +100,7 @@ export default async function ServicePage({ params }: Props) {
           <ol className="mt-6 space-y-6">
             {process.map((step, i) => (
               <li key={step.title} className="flex gap-4">
-                <span className="font-display text-lg font-semibold text-accent">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-display text-lg font-semibold text-link">{String(i + 1).padStart(2, "0")}</span>
                 <div>
                   <h3 className="font-semibold">{step.title}</h3>
                   <p className="mt-1 text-muted">{step.text}</p>

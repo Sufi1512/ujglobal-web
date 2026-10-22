@@ -34,7 +34,7 @@ export function ContactForm() {
     );
   }
 
-  const field = "mt-1 w-full rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-brand";
+  const field = "mt-1 w-full rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-link";
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -64,7 +64,7 @@ export function ContactForm() {
         {status === "sending" ? "Sending..." : "Send message"}
       </button>
       {status === "error" && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           Something went wrong. Please try again or email us directly.
         </p>
       )}

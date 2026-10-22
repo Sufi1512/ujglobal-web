@@ -18,7 +18,7 @@ export default function EditCaseStudyPage() {
     return (
       <div>
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        <Link href="/admin/case-studies" className="mt-4 inline-block text-sm text-brand underline">Back to case studies</Link>
+        <Link href="/admin/case-studies" className="mt-4 inline-block text-sm text-link underline">Back to case studies</Link>
       </div>
     );
   }

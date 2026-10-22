@@ -11,7 +11,7 @@ export default function SiteError({ reset }: { error: Error & { digest?: string 
         <button type="button" onClick={reset} className="rounded-full bg-brand px-6 py-3 font-medium text-white">
           Try again
         </button>
-        <Link href="/contact" className="rounded-full border border-line px-6 py-3 font-medium hover:border-brand">
+        <Link href="/contact" className="rounded-full border border-line px-6 py-3 font-medium hover:border-link">
           Contact us
         </Link>
       </div>
