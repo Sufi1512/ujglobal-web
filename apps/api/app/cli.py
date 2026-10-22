@@ -14,6 +14,7 @@ import os
 import sys
 from datetime import UTC, datetime
 
+from pydantic import EmailStr, TypeAdapter, ValidationError
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +23,15 @@ from app.core.security import hash_password
 from app.models import AuthSession, User, UserRole
 
 MIN_PASSWORD_LENGTH = 12
+_email = TypeAdapter(EmailStr)
+
+
+def normalise_email(raw: str) -> str:
+    """Validate like the login endpoint does, so the CLI never creates an account that cannot sign in."""
+    try:
+        return str(_email.validate_python(raw.strip())).lower()
+    except ValidationError:
+        sys.exit(f"Not a valid email address: {raw}")
 
 
 def read_password() -> str:
@@ -36,6 +46,7 @@ def read_password() -> str:
 
 
 async def create_user(email: str, name: str, role: UserRole) -> None:
+    email = normalise_email(email)
     async with SessionLocal() as session:
         if await session.scalar(select(User).where(User.email == email)):
             sys.exit(f"A user with email {email} already exists")
@@ -88,7 +99,7 @@ def main(argv: list[str] | None = None) -> None:
         sub.add_argument("--email", required=True)
 
     args = parser.parse_args(argv)
-    email = args.email.strip().lower()
+    email = normalise_email(args.email)
 
     async def run() -> None:
         try:

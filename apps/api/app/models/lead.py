@@ -1,12 +1,16 @@
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, IdTimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class LeadSource(enum.StrEnum):
@@ -63,6 +67,7 @@ class LeadNote(IdTimestampMixin, Base):
     body: Mapped[str] = mapped_column(Text)
 
     lead: Mapped[Lead] = relationship(back_populates="notes")
+    author: Mapped["User | None"] = relationship()
 
 
 class Subscriber(IdTimestampMixin, Base):
