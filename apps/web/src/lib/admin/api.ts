@@ -54,6 +54,45 @@ export type LeadPage = {
 
 export type Assignee = { id: string; name: string; role: Role };
 
+export type PublishStatus = "draft" | "published";
+export type ProcessStep = { title: string; text: string };
+export type Faq = { question: string; answer: string };
+export type ResultMetric = { metric: string; label: string };
+
+type Seo = { meta_title: string | null; meta_description: string | null; noindex: boolean };
+
+export type ServiceInput = Seo & {
+  title: string;
+  slug: string;
+  tagline: string | null;
+  summary: string;
+  body: { problem: string | null; process: ProcessStep[]; faqs: Faq[] };
+  deliverables: string[];
+  tech_stack: string[];
+  sort_order: number;
+  status: PublishStatus;
+};
+export type Service = ServiceInput & { id: string; created_at: string; updated_at: string };
+export type ServiceListItem = Pick<Service, "id" | "title" | "slug" | "status" | "sort_order" | "updated_at">;
+
+export type CaseStudyInput = Seo & {
+  title: string;
+  slug: string;
+  client_name: string | null;
+  summary: string | null;
+  challenge: string | null;
+  solution: string | null;
+  results: ResultMetric[];
+  tech_stack: string[];
+  live_url: string | null;
+  is_demo: boolean;
+  is_featured: boolean;
+  status: PublishStatus;
+  service_ids: string[];
+};
+export type CaseStudy = CaseStudyInput & { id: string; published_at: string | null; created_at: string; updated_at: string };
+export type CaseStudyListItem = Pick<CaseStudy, "id" | "title" | "slug" | "status" | "is_demo" | "is_featured" | "updated_at">;
+
 export type LeadFilters = {
   status?: LeadStatus;
   source?: LeadSource;
@@ -70,6 +109,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** For validation errors: message per field path, e.g. {"slug": "...", "body.faqs.0.question": "..."}. */
+    public fields: Record<string, string> = {},
   ) {
     super(message);
   }
@@ -85,15 +126,30 @@ export function setSignedOutHandler(handler: (() => void) | null) {
   onSignedOut = handler;
 }
 
-async function errorMessage(res: Response): Promise<string> {
+type ValidationIssue = { loc: (string | number)[]; msg: string };
+
+function cleanMessage(msg: string): string {
+  // Pydantic prefixes custom errors with "Value error, "; people don't need that.
+  return msg.replace(/^Value error, /, "");
+}
+
+async function toApiError(res: Response): Promise<ApiError> {
   try {
     const body = await res.json();
-    if (typeof body.detail === "string") return body.detail;
-    if (Array.isArray(body.detail) && body.detail[0]?.msg) return body.detail[0].msg;
+    if (typeof body.detail === "string") return new ApiError(res.status, body.detail);
+    if (Array.isArray(body.detail)) {
+      const fields: Record<string, string> = {};
+      for (const issue of body.detail as ValidationIssue[]) {
+        const path = issue.loc.filter((part) => part !== "body").join(".");
+        fields[path] ??= cleanMessage(issue.msg);
+      }
+      const count = Object.keys(fields).length;
+      return new ApiError(res.status, count === 1 ? "Please fix the highlighted field." : `Please fix the ${count} highlighted fields.`, fields);
+    }
   } catch {
     // not JSON
   }
-  return `Request failed (${res.status})`;
+  return new ApiError(res.status, `Request failed (${res.status})`);
 }
 
 /** Exchanges the refresh cookie for a new access token. Concurrent callers share one request. */
@@ -129,7 +185,7 @@ export async function login(email: string, password: string): Promise<AdminUser>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  if (!res.ok) throw new ApiError(res.status, await errorMessage(res));
+  if (!res.ok) throw await toApiError(res);
   const data: TokenResponse = await res.json();
   accessToken = data.access_token;
   return data.user;
@@ -157,7 +213,7 @@ async function authedFetch(path: string, init: RequestInit = {}): Promise<Respon
   if (res.status === 401) {
     onSignedOut?.();
   }
-  if (!res.ok) throw new ApiError(res.status, await errorMessage(res));
+  if (!res.ok) throw await toApiError(res);
   return res;
 }
 
@@ -166,7 +222,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     ...init,
     headers: init.body ? { "Content-Type": "application/json", ...init.headers } : init.headers,
   });
-  return res.json() as Promise<T>;
+  return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
 function query(filters: LeadFilters): string {
@@ -187,6 +243,20 @@ export const adminApi = {
   addNote: (id: string, body: string) =>
     request<LeadNote>(`/v1/admin/leads/${id}/notes`, { method: "POST", body: JSON.stringify({ body }) }),
   assignees: () => request<Assignee[]>("/v1/admin/leads/assignees"),
+  services: () => request<ServiceListItem[]>("/v1/admin/services"),
+  service: (id: string) => request<Service>(`/v1/admin/services/${id}`),
+  createService: (data: ServiceInput) =>
+    request<Service>("/v1/admin/services", { method: "POST", body: JSON.stringify(data) }),
+  updateService: (id: string, data: ServiceInput) =>
+    request<Service>(`/v1/admin/services/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteService: (id: string) => request<void>(`/v1/admin/services/${id}`, { method: "DELETE" }),
+  caseStudies: () => request<CaseStudyListItem[]>("/v1/admin/case-studies"),
+  caseStudy: (id: string) => request<CaseStudy>(`/v1/admin/case-studies/${id}`),
+  createCaseStudy: (data: CaseStudyInput) =>
+    request<CaseStudy>("/v1/admin/case-studies", { method: "POST", body: JSON.stringify(data) }),
+  updateCaseStudy: (id: string, data: CaseStudyInput) =>
+    request<CaseStudy>(`/v1/admin/case-studies/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteCaseStudy: (id: string) => request<void>(`/v1/admin/case-studies/${id}`, { method: "DELETE" }),
   async exportCsv(filters: LeadFilters): Promise<Blob> {
     const { page: _page, ...rest } = filters;
     void _page;

@@ -37,8 +37,8 @@ cd apps/api && uv run ruff check . && uv run mypy app && uv run pytest
 
 ## Content (services and case studies)
 
-Services and case studies live in Postgres and are edited through the admin API (`/v1/admin/services`,
-`/v1/admin/case-studies`, owners and editors; the editing screens follow in the next PR). Every change is
+Services and case studies live in Postgres. Owners and editors edit them at `/admin/services` and
+`/admin/case-studies` (sales users only see the leads inbox). Every change is
 recorded in `audit_log`. Public pages fetch content from the API at request time and cache it for up to
 5 minutes; after an edit the worker calls the web app's `/api/revalidate`, so changes show within seconds.
 Docker builds never need a running API. Running the web app without Docker, set `API_INTERNAL_URL` (if the
