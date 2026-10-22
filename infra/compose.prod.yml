@@ -1,0 +1,48 @@
+# Production stack on the UJ Global server.
+# Deploy: docker compose -f infra/compose.prod.yml --env-file /srv/ujglobal/.env up -d
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web, api]
+
+  web:
+    image: ghcr.io/sufi1512/ujglobal-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose: ["3000"]
+
+  api:
+    image: ghcr.io/sufi1512/ujglobal-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: /srv/ujglobal/.env
+    expose: ["8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ujglobal}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    # No published ports: Postgres is only reachable inside the Docker network.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
