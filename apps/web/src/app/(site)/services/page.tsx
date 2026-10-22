@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { services } from "@/lib/site";
+import { getServices } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/services" },
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = await getServices();
   return (
     <section className="mx-auto max-w-6xl px-4 py-20">
       <h1 className="font-display text-4xl font-semibold">Services</h1>

@@ -49,6 +49,7 @@ services:
       SMTP_SECURITY: none
       LEAD_ALERT_RECIPIENTS: '["team@ujglobal.tech"]'
       ADMIN_BASE_URL: http://localhost:3000
+      WEB_REVALIDATE_URL: http://web:3000/api/revalidate
     volumes: ["./apps/api/app:/app/app"]
     depends_on:
       api: { condition: service_started }
@@ -60,6 +61,9 @@ services:
     command: sh -c "npm ci && npm run dev"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
+      # Server-side rendering reaches the API inside the Docker network.
+      API_INTERNAL_URL: http://api:8000
+      REVALIDATE_SECRET: dev-only-revalidate-secret
     volumes: ["./apps/web:/app", "/app/node_modules"]
     ports: ["3000:3000"]
     depends_on: [api]

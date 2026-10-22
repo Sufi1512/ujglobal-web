@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import admin_leads, auth, health, leads, services
+from app.routers import admin_content, admin_leads, auth, case_studies, health, leads, services
 from app.workers.queue import close_queue
 
 settings = get_settings()
@@ -36,8 +36,10 @@ app.add_middleware(
 v1 = APIRouter(prefix="/v1")
 v1.include_router(auth.router)
 v1.include_router(services.router)
+v1.include_router(case_studies.router)
 v1.include_router(leads.router)
 v1.include_router(admin_leads.router)
+v1.include_router(admin_content.router)
 
 app.include_router(health.router)
 app.include_router(v1)

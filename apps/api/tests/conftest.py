@@ -52,3 +52,16 @@ def queued_alerts(monkeypatch) -> list:
 
     monkeypatch.setattr("app.routers.leads.queue_lead_alert", fake_queue)
     return queued
+
+
+@pytest.fixture(autouse=True)
+def queued_revalidations(monkeypatch) -> list:
+    """Records website refresh requests instead of talking to Redis."""
+    queued: list = []
+
+    async def fake_queue(*tags: str) -> bool:
+        queued.append(set(tags))
+        return True
+
+    monkeypatch.setattr("app.routers.admin_content.queue_revalidation", fake_queue)
+    return queued

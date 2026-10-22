@@ -35,6 +35,18 @@ cd apps/web && npm run lint && npx tsc --noEmit && npm run build
 cd apps/api && uv run ruff check . && uv run mypy app && uv run pytest
 ```
 
+## Content (services and case studies)
+
+Services and case studies live in Postgres and are edited through the admin API (`/v1/admin/services`,
+`/v1/admin/case-studies`, owners and editors; the editing screens follow in the next PR). Every change is
+recorded in `audit_log`. Public pages fetch content from the API at request time and cache it for up to
+5 minutes; after an edit the worker calls the web app's `/api/revalidate`, so changes show within seconds.
+Docker builds never need a running API. Running the web app without Docker, set `API_INTERNAL_URL` (if the
+API isn't on http://localhost:8000) and `REVALIDATE_SECRET` (same value as the API's).
+
+Case studies default to **demo projects** and are labelled "Demo project" everywhere on the site until
+`is_demo` is turned off for real client work.
+
 ## Background worker and email
 
 Slow work runs in the `worker` container (ARQ on Redis), started by `docker compose up`. Right now it emails the
@@ -71,5 +83,6 @@ Then sign in at http://localhost:3000/admin. Roles are `owner`, `editor` and `sa
 Phase 0 scaffold: public pages (home, services, service detail, about, contact), SEO basics (metadata, JSON-LD,
 sitemap, robots), core database schema, and a contact endpoint that stores every submission as a lead.
 Phase 1 in progress: admin auth (Argon2 passwords, JWT access tokens, rotating refresh cookie), the
-leads inbox at `/admin/leads`, and new-lead alert emails sent by the background worker.
+leads inbox at `/admin/leads`, new-lead alert emails sent by the background worker, and services and case
+studies managed through the admin API, with `/work` pages for the portfolio.
 See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases.
