@@ -1,6 +1,14 @@
 import Link from "next/link";
-import { site, services } from "@/lib/site";
+import { site } from "@/lib/site";
 import { Logo } from "./Logo";
+
+// Plain links, so the footer never depends on the content API (it also renders on the 404 page).
+const links = [
+  { href: "/services", label: "Services" },
+  { href: "/work", label: "Work" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Get a quote" },
+];
 
 export function Footer() {
   return (
@@ -11,12 +19,12 @@ export function Footer() {
           <p className="mt-3 text-sm text-muted">{site.tagline}</p>
         </div>
         <div>
-          <h2 className="text-sm font-semibold">Services</h2>
+          <h2 className="text-sm font-semibold">Company</h2>
           <ul className="mt-3 space-y-2 text-sm text-muted">
-            {services.slice(0, 5).map((s) => (
-              <li key={s.slug}>
-                <Link href={`/services/${s.slug}`} className="hover:text-foreground">
-                  {s.title}
+            {links.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="hover:text-foreground">
+                  {l.label}
                 </Link>
               </li>
             ))}

@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     # Base URL of the admin panel, used for "open in inbox" links in alerts.
     admin_base_url: str = "http://localhost:3000"
 
+    # After content changes the worker asks the Next.js site to refresh its cached pages.
+    # Empty URL turns this off; pages then still refresh on their own within 5 minutes.
+    web_revalidate_url: str | None = "http://localhost:3000/api/revalidate"
+    revalidate_secret: str = "dev-only-revalidate-secret"
+
     @model_validator(mode="after")
     def require_real_secrets_outside_dev(self) -> "Settings":
         if self.environment not in {"local", "test"}:
@@ -44,6 +49,8 @@ class Settings(BaseSettings):
                 raise ValueError("JWT_SECRET must be set to a random value of at least 32 characters")
             if self.ip_hash_salt == "change-me":
                 raise ValueError("IP_HASH_SALT must be changed outside local development")
+            if self.web_revalidate_url and self.revalidate_secret == "dev-only-revalidate-secret":
+                raise ValueError("REVALIDATE_SECRET must be set to a random value shared with the web app")
             if self.lead_alert_recipients and self.smtp_host in {"localhost", "127.0.0.1"}:
                 raise ValueError(
                     "SMTP_HOST must point at the email provider, "

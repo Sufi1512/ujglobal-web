@@ -15,6 +15,7 @@ from app.core.config import get_settings
 log = logging.getLogger(__name__)
 
 SEND_LEAD_ALERT = "send_lead_alert"
+REVALIDATE_WEB = "revalidate_web"
 
 _pool: ArqRedis | None = None
 
@@ -47,6 +48,19 @@ async def queue_lead_alert(lead_id: uuid.UUID) -> bool:
         return True
     except Exception:
         log.exception("Could not queue the alert for lead %s; the worker sweep will retry it", lead_id)
+        return False
+
+
+async def queue_revalidation(*tags: str) -> bool:
+    """Asks the worker to refresh the website's cached pages for these content tags. Never raises."""
+    try:
+        pool = await _get_pool()
+        await pool.enqueue_job(REVALIDATE_WEB, sorted(set(tags)))
+        return True
+    except Exception:
+        log.exception(
+            "Could not queue a website refresh for %s; pages refresh on their own within minutes", tags
+        )
         return False
 
 

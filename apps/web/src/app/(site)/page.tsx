@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { services, site } from "@/lib/site";
+import { CaseStudyCard } from "@/components/CaseStudyCard";
+import { getCaseStudies, getServices } from "@/lib/content";
+import { site } from "@/lib/site";
 
 const steps = [
   { title: "Discover", text: "We learn your goals, users and constraints, then agree on scope." },
@@ -8,7 +10,8 @@ const steps = [
   { title: "Launch and grow", text: "Go live, measure, and keep improving speed, SEO and conversion." },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const [services, featured] = await Promise.all([getServices(), getCaseStudies({ featured: true })]);
   return (
     <>
       <section className="mx-auto max-w-6xl px-4 pb-16 pt-20 sm:pt-28">
@@ -45,6 +48,26 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      {featured.length > 0 && (
+        <section aria-labelledby="work-heading" className="mx-auto max-w-6xl px-4 py-16">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 id="work-heading" className="font-display text-3xl font-semibold">
+              Featured work
+            </h2>
+            <Link href="/work" className="text-sm font-medium text-brand hover:underline">
+              See all work
+            </Link>
+          </div>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.slice(0, 3).map((study) => (
+              <li key={study.slug}>
+                <CaseStudyCard study={study} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="process-heading" className="mx-auto max-w-6xl px-4 py-16">
         <h2 id="process-heading" className="font-display text-3xl font-semibold">

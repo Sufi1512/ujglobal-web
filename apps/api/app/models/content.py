@@ -54,6 +54,8 @@ class CaseStudy(IdTimestampMixin, SeoMixin, Base):
 
     title: Mapped[str] = mapped_column(String(200))
     client_name: Mapped[str | None] = mapped_column(String(160))
+    # One or two sentences for portfolio cards and the meta description fallback.
+    summary: Mapped[str | None] = mapped_column(Text)
     challenge: Mapped[str | None] = mapped_column(Text)
     solution: Mapped[str | None] = mapped_column(Text)
     results: Mapped[list[dict]] = mapped_column(JSONB, default=list)

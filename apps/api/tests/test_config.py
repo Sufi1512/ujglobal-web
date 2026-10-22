@@ -8,6 +8,7 @@ PRODUCTION_READY = {
     "jwt_secret": "x" * 40,
     "ip_hash_salt": "a-real-random-salt",
     "smtp_host": "smtp.resend.com",
+    "revalidate_secret": "another-random-shared-value",
 }
 
 
@@ -22,6 +23,7 @@ def test_production_settings_load_when_everything_is_set():
         ({"jwt_secret": "short"}, "JWT_SECRET"),
         ({"ip_hash_salt": "change-me"}, "IP_HASH_SALT"),
         ({"smtp_host": "localhost"}, "SMTP_HOST"),
+        ({"revalidate_secret": "dev-only-revalidate-secret"}, "REVALIDATE_SECRET"),
     ],
 )
 def test_production_refuses_unsafe_defaults(override, message):

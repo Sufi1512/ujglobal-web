@@ -15,6 +15,8 @@ services:
     image: ghcr.io/sufi1512/ujglobal-web:${IMAGE_TAG:-latest}
     restart: unless-stopped
     expose: ["3000"]
+    # Needs API_INTERNAL_URL and REVALIDATE_SECRET from the shared .env.
+    env_file: /srv/ujglobal/.env
 
   api:
     image: ghcr.io/sufi1512/ujglobal-api:${IMAGE_TAG:-latest}

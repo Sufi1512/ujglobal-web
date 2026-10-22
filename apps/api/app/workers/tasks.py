@@ -5,6 +5,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import httpx
 from arq import Retry
 from sqlalchemy import select
 
@@ -78,3 +79,30 @@ async def sweep_unsent_lead_alerts(ctx: dict[str, Any]) -> int:
     if queued:
         log.info("Sweep re-queued %s lead alert(s)", queued)
     return queued
+
+
+# Content tags the website knows how to refresh (see apps/web/src/app/api/revalidate/route.ts).
+CONTENT_TAGS = {"services", "case-studies"}
+
+
+async def revalidate_web(ctx: dict[str, Any], tags: list[str]) -> str:
+    """Tells the Next.js site to drop its cached copies of pages that show this content."""
+    settings = get_settings()
+    if not settings.web_revalidate_url:
+        return "disabled"
+    wanted = sorted(set(tags) & CONTENT_TAGS)
+    if not wanted:
+        return "nothing to do"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            res = await client.post(
+                settings.web_revalidate_url,
+                json={"tags": wanted},
+                headers={"X-Revalidate-Secret": settings.revalidate_secret},
+            )
+            res.raise_for_status()
+    except httpx.HTTPError as exc:
+        attempt = ctx.get("job_try", 1)
+        log.warning("Website refresh for %s failed (attempt %s): %s", wanted, attempt, exc)
+        raise Retry(defer=RETRY_DELAYS[min(attempt, len(RETRY_DELAYS)) - 1]) from exc
+    return "refreshed " + ", ".join(wanted)
