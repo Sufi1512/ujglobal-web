@@ -344,6 +344,6 @@ Sufiyan answered these on 22 Oct 2026, and the rest of this plan has been update
 | Date | What happened |
 | --- | --- |
 | 22 Oct 2026 | Phase 0 scaffold merged in PR #1: Next.js pages (home, services, 7 service pages, about, contact), SEO basics, FastAPI with the core schema and the contact-to-lead endpoint, Alembic migration, Docker Compose, CI |
-| 22 Oct 2026 | Phase 1 started. Admin auth API on branch `claude/phase-1-admin-auth`: Argon2 password hashing, 15-minute JWT access tokens, rotating refresh token in an httpOnly cookie with reuse detection, `/v1/auth/login`, `/refresh`, `/logout`, `/me`, role checks, and a CLI to create admin users (no public sign-up) |
+| 22 Oct 2026 | Phase 1 started. Admin auth API in draft PR #3: Argon2 password hashing, 15-minute JWT access tokens, rotating refresh token in an httpOnly cookie with reuse detection, `/v1/auth/login`, `/refresh`, `/logout`, `/me`, role checks, and a CLI to create admin users (no public sign-up) |
 
 **Next in Phase 1:** leads inbox (admin API and `/admin` screens: login, status, notes, CSV export), lead email alerts, admin editing of services and case studies, final brand kit, `/work` with demo projects and the legal pages, then deploy to our own server. Needed before deploying: the server's OS, whether Docker is installed, and the email provider (Resend or Postmark).
