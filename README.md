@@ -19,7 +19,7 @@ docker compose up --build
 
 - Site: http://localhost:3000
 - API docs: http://localhost:8000/docs
-- Mailpit (test inbox): http://localhost:8025
+- Mailpit (test inbox, where new-lead alert emails land): http://localhost:8025
 
 Without Docker (needs Node 22, Python 3.12+, [uv](https://docs.astral.sh/uv/) and a local Postgres):
 
@@ -34,6 +34,14 @@ cd apps/web && npm install && npm run dev
 cd apps/web && npm run lint && npx tsc --noEmit && npm run build
 cd apps/api && uv run ruff check . && uv run mypy app && uv run pytest
 ```
+
+## Background worker and email
+
+Slow work runs in the `worker` container (ARQ on Redis), started by `docker compose up`. Right now it emails the
+team about every new lead; the lead is always saved first, failed emails retry with back-off, and a sweep every
+minute catches anything missed. Locally the emails go to Mailpit. In production set the `SMTP_*`,
+`EMAIL_FROM` and `LEAD_ALERT_RECIPIENTS` settings from `infra/.env.example` (Resend or Postmark both work over
+SMTP). Without Docker: `cd apps/api && uv run arq app.workers.main.WorkerSettings`.
 
 ## Database changes
 
@@ -62,6 +70,6 @@ Then sign in at http://localhost:3000/admin. Roles are `owner`, `editor` and `sa
 
 Phase 0 scaffold: public pages (home, services, service detail, about, contact), SEO basics (metadata, JSON-LD,
 sitemap, robots), core database schema, and a contact endpoint that stores every submission as a lead.
-Phase 1 in progress: admin auth (Argon2 passwords, JWT access tokens, rotating refresh cookie) and the
-leads inbox at `/admin/leads`.
+Phase 1 in progress: admin auth (Argon2 passwords, JWT access tokens, rotating refresh cookie), the
+leads inbox at `/admin/leads`, and new-lead alert emails sent by the background worker.
 See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases.

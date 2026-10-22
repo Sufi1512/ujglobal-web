@@ -44,6 +44,11 @@ class Settings(BaseSettings):
                 raise ValueError("JWT_SECRET must be set to a random value of at least 32 characters")
             if self.ip_hash_salt == "change-me":
                 raise ValueError("IP_HASH_SALT must be changed outside local development")
+            if self.lead_alert_recipients and self.smtp_host in {"localhost", "127.0.0.1"}:
+                raise ValueError(
+                    "SMTP_HOST must point at the email provider, "
+                    "or set LEAD_ALERT_RECIPIENTS=[] to turn lead alerts off"
+                )
         return self
 
 

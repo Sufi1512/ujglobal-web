@@ -4,6 +4,7 @@ from app.core.client import client_ip, hash_ip
 from app.core.db import SessionDep
 from app.models import Lead, LeadSource
 from app.schemas.lead import ContactIn, LeadCreated
+from app.workers.queue import queue_lead_alert
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
@@ -29,5 +30,6 @@ async def create_contact_lead(payload: ContactIn, request: Request, session: Ses
     )
     session.add(lead)
     await session.commit()
-    # Email notification to the team is queued from here once the worker lands (Phase 1).
+    # Saved first, emailed second: the team alert goes through the worker and never blocks or loses a lead.
+    await queue_lead_alert(lead.id)
     return LeadCreated(id=lead.id)
