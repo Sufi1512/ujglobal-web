@@ -2,7 +2,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import health, leads, services
+from app.routers import auth, health, leads, services
 
 settings = get_settings()
 
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 v1 = APIRouter(prefix="/v1")
+v1.include_router(auth.router)
 v1.include_router(services.router)
 v1.include_router(leads.router)
 

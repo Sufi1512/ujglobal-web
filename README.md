@@ -43,8 +43,23 @@ Edit the models in `apps/api/app/models`, then:
 cd apps/api && uv run alembic revision --autogenerate -m "describe the change" && uv run alembic upgrade head
 ```
 
+## Admin users
+
+There is no public sign-up. Create accounts from the API container (or `apps/api` locally); the password is asked for in a hidden prompt:
+
+```bash
+cd apps/api && uv run python -m app.cli create-user --email you@ujglobal.tech --name "Your Name" --role owner
+uv run python -m app.cli set-password --email you@ujglobal.tech   # also signs out existing sessions
+uv run python -m app.cli deactivate --email someone@ujglobal.tech
+```
+
+On the server: `docker compose -f infra/compose.prod.yml exec api python -m app.cli create-user ...`.
+Roles are `owner`, `editor` and `sales`. Admin endpoints use `POST /v1/auth/login`, `/refresh` and `/logout`
+(see the API docs), and `infra/.env.example` lists the settings the server needs.
+
 ## Status
 
 Phase 0 scaffold: public pages (home, services, service detail, about, contact), SEO basics (metadata, JSON-LD,
 sitemap, robots), core database schema, and a contact endpoint that stores every submission as a lead.
+Phase 1 in progress: admin auth API (Argon2 passwords, JWT access tokens, rotating refresh cookie).
 See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases.
