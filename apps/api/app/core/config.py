@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     email_from: str = "UJ Global <no-reply@ujglobal.tech>"
     # Who gets an email for every new lead. Empty means alerts are switched off.
     lead_alert_recipients: list[str] = ["team@ujglobal.tech"]
+    # Leads with no activity for this many days are deleted automatically (won clients are kept).
+    # Must match the privacy policy page (apps/web/src/app/(site)/privacy). 0 keeps them forever.
+    lead_retention_days: int = 730
+
     # Base URL of the admin panel, used for "open in inbox" links in alerts.
     admin_base_url: str = "http://localhost:3000"
 

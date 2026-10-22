@@ -243,6 +243,7 @@ export const adminApi = {
   addNote: (id: string, body: string) =>
     request<LeadNote>(`/v1/admin/leads/${id}/notes`, { method: "POST", body: JSON.stringify({ body }) }),
   assignees: () => request<Assignee[]>("/v1/admin/leads/assignees"),
+  deleteLead: (id: string) => request<void>(`/v1/admin/leads/${id}`, { method: "DELETE" }),
   services: () => request<ServiceListItem[]>("/v1/admin/services"),
   service: (id: string) => request<Service>(`/v1/admin/services/${id}`),
   createService: (data: ServiceInput) =>

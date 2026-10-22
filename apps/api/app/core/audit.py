@@ -33,12 +33,18 @@ def changes(before: dict[str, Any], after: dict[str, Any]) -> dict[str, list[Any
 
 def record(
     session: AsyncSession,
-    user: User,
+    user: User | None,
     action: str,
     entity: str,
     entity_id: uuid.UUID,
     diff: dict[str, Any],
 ) -> None:
     session.add(
-        AuditLog(user_id=user.id, action=action, entity=entity, entity_id=entity_id, diff=_jsonable(diff))
+        AuditLog(
+            user_id=user.id if user else None,
+            action=action,
+            entity=entity,
+            entity_id=entity_id,
+            diff=_jsonable(diff),
+        )
     )

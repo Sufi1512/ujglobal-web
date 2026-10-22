@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAdminSession } from "@/components/admin/AdminSession";
 import { SOURCE_LABELS, STATUS_LABELS, StatusBadge, formatDate } from "@/components/admin/leadUi";
 import { type Assignee, LEAD_STATUSES, type LeadDetail, type LeadStatus, adminApi } from "@/lib/admin/api";
 
@@ -22,6 +23,21 @@ export default function LeadDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [note, setNote] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { user } = useAdminSession();
+  const router = useRouter();
+
+  async function deleteLead() {
+    setSaving(true);
+    setError(null);
+    try {
+      await adminApi.deleteLead(id);
+      router.replace("/admin/leads");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete the lead");
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     adminApi.lead(id).then(setLead, (err: Error) => setError(err.message));
@@ -201,6 +217,35 @@ export default function LeadDetailPage() {
             {utm.length > 0 && <Field label="Campaign">{utm.map(([k, v]) => `${k}: ${v}`).join(" · ")}</Field>}
             <Field label="Consent">{lead.consent ? "Agreed to be contacted" : "Not given"}</Field>
           </dl>
+          {user?.role === "owner" && (
+            <section aria-labelledby="delete-heading" className="rounded-xl border border-line p-6 text-sm">
+              <h2 id="delete-heading" className="font-medium">
+                Delete lead
+              </h2>
+              <p className="mt-1 text-muted">
+                For deletion requests under the privacy policy. Removes the lead and its notes for good.
+              </p>
+              {confirmDelete ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={deleteLead}
+                    className="rounded-full bg-red-600 px-4 py-2 font-medium text-white hover:opacity-90 disabled:opacity-50"
+                  >
+                    {saving ? "Deleting…" : `Yes, delete ${lead.name}`}
+                  </button>
+                  <button type="button" onClick={() => setConfirmDelete(false)} className="rounded-full border border-line px-4 py-2">
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setConfirmDelete(true)} className="mt-3 text-red-600 underline dark:text-red-400">
+                  Delete this lead
+                </button>
+              )}
+            </section>
+          )}
         </aside>
       </div>
     </>

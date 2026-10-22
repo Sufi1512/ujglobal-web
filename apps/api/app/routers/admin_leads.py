@@ -7,11 +7,12 @@ from collections.abc import Iterator
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import selectinload
 
+from app.core import audit
 from app.core.auth import CurrentUser, require_roles
 from app.core.db import SessionDep
 from app.models import Lead, LeadNote, LeadSource, LeadStatus, User, UserRole
@@ -226,9 +227,12 @@ async def get_lead(lead_id: uuid.UUID, session: SessionDep) -> LeadDetail:
 
 
 @router.patch("/{lead_id}", response_model=LeadDetail)
-async def update_lead(lead_id: uuid.UUID, payload: LeadUpdate, session: SessionDep) -> LeadDetail:
+async def update_lead(
+    lead_id: uuid.UUID, payload: LeadUpdate, session: SessionDep, user: CurrentUser
+) -> LeadDetail:
     lead = await _get_lead(session, lead_id)
     changes = payload.model_fields_set
+    before = {"status": lead.status, "assignee_id": lead.assignee_id}
 
     if "status" in changes:
         if payload.status is None:
@@ -243,8 +247,38 @@ async def update_lead(lead_id: uuid.UUID, payload: LeadUpdate, session: SessionD
                 )
         lead.assignee_id = payload.assignee_id
 
+    diff = audit.changes(before, {"status": lead.status, "assignee_id": lead.assignee_id})
+    if diff:
+        audit.record(session, user, "update", "lead", lead.id, diff)
     await session.commit()
     return _detail(await _get_lead(session, lead_id))
+
+
+@router.delete(
+    "/{lead_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_roles())],
+    summary="Delete a lead and its notes (owners only), e.g. on a privacy request",
+)
+async def delete_lead(lead_id: uuid.UUID, session: SessionDep, user: CurrentUser) -> Response:
+    lead = await _get_lead(session, lead_id)
+    # The audit row records that a lead was deleted, never who it was: no personal data survives a deletion.
+    audit.record(
+        session,
+        user,
+        "delete",
+        "lead",
+        lead.id,
+        {
+            "source": lead.source,
+            "status": lead.status,
+            "created_at": lead.created_at,
+            "notes": len(lead.notes),
+        },
+    )
+    await session.delete(lead)
+    await session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/{lead_id}/notes", response_model=LeadNoteOut, status_code=status.HTTP_201_CREATED)
@@ -254,5 +288,8 @@ async def add_note(
     await _get_lead(session, lead_id)
     note = LeadNote(lead_id=lead_id, author_id=user.id, body=payload.body.strip())
     session.add(note)
+    await session.flush()
+    # The note's text stays out of the audit trail, so deleting the lead leaves no personal data behind.
+    audit.record(session, user, "create", "lead_note", lead_id, {"note_id": note.id})
     await session.commit()
     return LeadNoteOut.model_validate(note).model_copy(update={"author_name": user.name})

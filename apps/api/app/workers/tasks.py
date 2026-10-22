@@ -3,15 +3,17 @@
 import logging
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 import httpx
 from arq import Retry
-from sqlalchemy import select
+from sqlalchemy import delete, or_, select
+from sqlalchemy.engine import CursorResult
 
+from app.core import audit
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.models import Lead
+from app.models import AuthSession, Lead, LeadNote, LeadStatus
 from app.services.email import build_lead_alert, send_email
 from app.workers.queue import SEND_LEAD_ALERT, lead_alert_job_id
 
@@ -106,3 +108,61 @@ async def revalidate_web(ctx: dict[str, Any], tags: list[str]) -> str:
         log.warning("Website refresh for %s failed (attempt %s): %s", wanted, attempt, exc)
         raise Retry(defer=RETRY_DELAYS[min(attempt, len(RETRY_DELAYS)) - 1]) from exc
     return "refreshed " + ", ".join(wanted)
+
+
+async def purge_expired_data(ctx: dict[str, Any]) -> dict[str, int]:
+    """Daily: deletes leads past the retention period (privacy policy) and long-dead admin sessions.
+
+    A lead's last activity is the later of its own last change (status, assignee) and its newest note.
+    Won leads are clients, kept under the client relationship instead.
+    """
+    settings = get_settings()
+    now = datetime.now(UTC)
+    deleted_leads = 0
+    async with SessionLocal() as session, session.begin():
+        if settings.lead_retention_days > 0:
+            cutoff = now - timedelta(days=settings.lead_retention_days)
+            recent_note = select(LeadNote.id).where(
+                LeadNote.lead_id == Lead.id, LeadNote.created_at >= cutoff
+            )
+            expired = list(
+                await session.scalars(
+                    select(Lead).where(
+                        Lead.updated_at < cutoff,
+                        Lead.status != LeadStatus.won,
+                        ~recent_note.exists(),
+                    )
+                )
+            )
+            for lead in expired:
+                # No personal data in the audit trail: only that a lead of this kind was removed.
+                audit.record(
+                    session,
+                    None,
+                    "delete",
+                    "lead",
+                    lead.id,
+                    {"reason": "retention", "status": lead.status, "created_at": lead.created_at},
+                )
+                await session.delete(lead)
+            deleted_leads = len(expired)
+
+        # Sign-in sessions that ended (expired or revoked) more than 30 days ago serve no purpose.
+        sessions = cast(
+            CursorResult[Any],
+            await session.execute(
+                delete(AuthSession).where(
+                    or_(
+                        AuthSession.expires_at < now - timedelta(days=30),
+                        AuthSession.revoked_at < now - timedelta(days=30),
+                    )
+                )
+            ),
+        )
+    if deleted_leads:
+        log.info(
+            "Retention: deleted %s lead(s) with no activity for %s days",
+            deleted_leads,
+            settings.lead_retention_days,
+        )
+    return {"leads": deleted_leads, "sessions": sessions.rowcount or 0}
