@@ -84,7 +84,7 @@ Launch content: with no client work yet, the portfolio starts with 3 to 4 in-hou
 
 **AI features (showcase the firm's own skills)**
 
-- Site assistant chat widget answering questions about services, pricing and past work, grounded in site content through pgvector retrieval, with a handoff to "book a call".
+- Site assistant chat widget answering questions about services, process and past work (it never quotes prices and points pricing questions to "Get a quote"), grounded in site content through pgvector retrieval, with a handoff to "book a call".
 - Automatic lead triage: Claude summarises each brief, tags service and budget, and scores fit, shown in the admin inbox.
 - Admin writing helper: draft meta titles, descriptions and post outlines.
 
@@ -344,5 +344,6 @@ Sufiyan answered these on 22 Oct 2026, and the rest of this plan has been update
 | Date | What happened |
 | --- | --- |
 | 22 Oct 2026 | Phase 0 scaffold merged in PR #1: Next.js pages (home, services, 7 service pages, about, contact), SEO basics, FastAPI with the core schema and the contact-to-lead endpoint, Alembic migration, Docker Compose, CI |
+| 22 Oct 2026 | Phase 1 started. Admin auth API on branch `claude/phase-1-admin-auth`: Argon2 password hashing, 15-minute JWT access tokens, rotating refresh token in an httpOnly cookie with reuse detection, `/v1/auth/login`, `/refresh`, `/logout`, `/me`, role checks, and a CLI to create admin users (no public sign-up) |
 
-**Next:** Phase 1 (admin login and leads inbox, lead email alerts, final brand kit, deploy to our own server). Needed before deploying: the server's OS and whether Docker is installed.
+**Next in Phase 1:** leads inbox (admin API and `/admin` screens: login, status, notes, CSV export), lead email alerts, admin editing of services and case studies, final brand kit, `/work` with demo projects and the legal pages, then deploy to our own server. Needed before deploying: the server's OS, whether Docker is installed, and the email provider (Resend or Postmark).
