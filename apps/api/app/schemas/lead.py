@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.models import LeadSource, LeadStatus
 
@@ -15,9 +15,27 @@ class ContactIn(BaseModel):
     landing_page: str | None = Field(default=None, max_length=500)
     referrer: str | None = Field(default=None, max_length=500)
     utm: dict[str, str] | None = None
-    consent: bool = False
+    # The form's "I agree" box. Required: we only store enquiries from people who agreed to the policy.
+    consent: bool = Field(default=False, validate_default=True)
     # Honeypot field: real visitors never see it, bots fill it in.
     website: str | None = None
+
+    @field_validator("consent")
+    @classmethod
+    def must_agree(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError("Please agree to the privacy policy so we can reply")
+        return value
+
+    @field_validator("utm")
+    @classmethod
+    def small_utm(cls, value: dict[str, str] | None) -> dict[str, str] | None:
+        # Only the standard campaign tags, trimmed, so the form can't be used to store arbitrary data.
+        if not value:
+            return None
+        allowed = {"utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"}
+        kept = {k: v.strip()[:100] for k, v in value.items() if k in allowed and v.strip()}
+        return kept or None
 
 
 class LeadCreated(BaseModel):

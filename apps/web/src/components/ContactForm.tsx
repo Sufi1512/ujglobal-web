@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { submitContact } from "@/lib/api";
 
@@ -18,6 +19,7 @@ export function ContactForm() {
         email: String(data.get("email") ?? ""),
         company: String(data.get("company") ?? "") || undefined,
         message: String(data.get("message") ?? ""),
+        consent: data.get("consent") === "on",
         website: String(data.get("website") ?? ""),
       });
       setStatus("sent");
@@ -53,6 +55,16 @@ export function ContactForm() {
       <label className="block text-sm">
         What do you want to build?
         <textarea name="message" required minLength={10} maxLength={5000} rows={5} className={field} />
+      </label>
+      <label className="flex items-start gap-3 text-sm">
+        <input name="consent" type="checkbox" required className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--brand)]" />
+        <span>
+          I agree that UJ Global may use these details to reply to my enquiry, as described in the{" "}
+          <Link href="/privacy" className="text-link underline">
+            privacy policy
+          </Link>
+          .
+        </span>
       </label>
       {/* Honeypot: hidden from people, filled by bots */}
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />

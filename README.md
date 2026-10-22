@@ -55,6 +55,20 @@ minute catches anything missed. Locally the emails go to Mailpit. In production 
 `EMAIL_FROM` and `LEAD_ALERT_RECIPIENTS` settings from `infra/.env.example` (Resend or Postmark both work over
 SMTP). Without Docker: `cd apps/api && uv run arq app.workers.main.WorkerSettings`.
 
+## Privacy
+
+The legal pages (`/privacy`, `/cookies`, `/terms`) describe what the code actually does, so change them in
+the same pull request as any change to what data is collected, where it goes or which cookies are set.
+They rely on:
+
+- the contact form's required consent tick, and campaign tags read only from the current link (nothing is
+  stored in visitors' browsers; ordinary visitors get no cookies);
+- owners deleting a lead on request (lead page in the admin), with no personal data left in the audit log;
+- the worker deleting leads with no activity for `LEAD_RETENTION_DAYS` (730) every night, except won clients.
+
+The company details on those pages live in `legal` in `apps/web/src/lib/site.ts`; bracketed values are
+placeholders that must be filled before launch.
+
 ## Database changes
 
 Edit the models in `apps/api/app/models`, then:

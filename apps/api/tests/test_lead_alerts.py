@@ -23,6 +23,7 @@ VALID = {
     "email": "ada@example.com",
     "company": "Analytical Engines",
     "message": "We need an AI assistant for our support team.",
+    "consent": True,
 }
 
 

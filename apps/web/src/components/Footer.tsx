@@ -39,7 +39,20 @@ export function Footer() {
           </p>
         </div>
       </div>
-      <p className="pb-8 text-center text-xs text-muted">© {new Date().getFullYear()} UJ Global. All rights reserved.</p>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 border-t border-line px-4 py-6 text-xs text-muted">
+        <p>© {new Date().getFullYear()} UJ Global. All rights reserved.</p>
+        <nav aria-label="Legal" className="flex gap-5">
+          <Link href="/privacy" className="hover:text-foreground">
+            Privacy
+          </Link>
+          <Link href="/cookies" className="hover:text-foreground">
+            Cookies
+          </Link>
+          <Link href="/terms" className="hover:text-foreground">
+            Terms
+          </Link>
+        </nav>
+      </div>
     </footer>
   );
 }

@@ -13,6 +13,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly" as const,
     priority: path === "" ? 1 : 0.8,
   }));
+  const legalPages = ["/privacy", "/cookies", "/terms"].map((path) => ({
+    url: `${site.url}${path}`,
+    changeFrequency: "yearly" as const,
+    priority: 0.3,
+  }));
   const servicePages = services
     .filter((s) => !s.noindex)
     .map((s) => ({
@@ -29,5 +34,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "yearly" as const,
     priority: 0.7,
   }));
-  return [...pages, ...servicePages, ...workPages];
+  return [...pages, ...servicePages, ...workPages, ...legalPages];
 }
