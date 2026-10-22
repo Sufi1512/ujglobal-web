@@ -28,10 +28,31 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ujglobal
       CORS_ORIGINS: '["http://localhost:3000"]'
       COOKIE_SECURE: "false"
+      REDIS_URL: redis://redis:6379/0
     volumes: ["./apps/api/app:/app/app", "./apps/api/alembic:/app/alembic"]
     ports: ["8000:8000"]
     depends_on:
       postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  # Sends new-lead alerts (and later other background jobs). Emails land in Mailpit: http://localhost:8025
+  worker:
+    build: ./apps/api
+    command: arq app.workers.main.WorkerSettings --watch app
+    # Comes back on its own if Redis restarts; leads queued meanwhile are caught by the sweep.
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ujglobal
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_SECURITY: none
+      LEAD_ALERT_RECIPIENTS: '["team@ujglobal.tech"]'
+      ADMIN_BASE_URL: http://localhost:3000
+    volumes: ["./apps/api/app:/app/app"]
+    depends_on:
+      api: { condition: service_started }
+      mailpit: { condition: service_started }
 
   web:
     image: node:22-alpine

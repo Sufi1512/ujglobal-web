@@ -1,12 +1,24 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.routers import admin_leads, auth, health, leads, services
+from app.workers.queue import close_queue
 
 settings = get_settings()
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    yield
+    await close_queue()
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="UJ Global API",
     version="0.1.0",
     docs_url="/docs" if settings.environment != "production" else None,

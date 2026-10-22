@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -21,6 +22,21 @@ class Settings(BaseSettings):
     # Secure cookies need HTTPS; only plain-HTTP local development turns this off.
     cookie_secure: bool = True
 
+    # Background jobs (ARQ) and email. Locally SMTP goes to Mailpit; in production point it at the
+    # SMTP endpoint of Resend or Postmark, so switching provider is a config change only.
+    redis_url: str = "redis://localhost:6379/0"
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    # "starttls" (port 587), "tls" (implicit TLS, port 465) or "none" (Mailpit only).
+    smtp_security: Literal["starttls", "tls", "none"] = "none"
+    email_from: str = "UJ Global <no-reply@ujglobal.tech>"
+    # Who gets an email for every new lead. Empty means alerts are switched off.
+    lead_alert_recipients: list[str] = ["team@ujglobal.tech"]
+    # Base URL of the admin panel, used for "open in inbox" links in alerts.
+    admin_base_url: str = "http://localhost:3000"
+
     @model_validator(mode="after")
     def require_real_secrets_outside_dev(self) -> "Settings":
         if self.environment not in {"local", "test"}:
@@ -28,6 +44,11 @@ class Settings(BaseSettings):
                 raise ValueError("JWT_SECRET must be set to a random value of at least 32 characters")
             if self.ip_hash_salt == "change-me":
                 raise ValueError("IP_HASH_SALT must be changed outside local development")
+            if self.lead_alert_recipients and self.smtp_host in {"localhost", "127.0.0.1"}:
+                raise ValueError(
+                    "SMTP_HOST must point at the email provider, "
+                    "or set LEAD_ALERT_RECIPIENTS=[] to turn lead alerts off"
+                )
         return self
 
 

@@ -53,6 +53,8 @@ class Lead(IdTimestampMixin, Base):
     referrer: Mapped[str | None] = mapped_column(Text)
     ip_hash: Mapped[str | None] = mapped_column(String(64))
     consent: Mapped[bool] = mapped_column(default=False)
+    # When the team alert email went out. Null means not sent yet; the worker retries those.
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     notes: Mapped[list["LeadNote"]] = relationship(back_populates="lead", cascade="all, delete-orphan")
 

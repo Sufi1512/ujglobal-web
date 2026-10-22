@@ -39,3 +39,16 @@ async def client() -> AsyncIterator[AsyncClient]:
 @pytest.fixture
 def session_factory():
     return SessionLocal
+
+
+@pytest.fixture(autouse=True)
+def queued_alerts(monkeypatch) -> list:
+    """Records alert jobs instead of talking to Redis. The worker tests cover the real queue."""
+    queued: list = []
+
+    async def fake_queue(lead_id) -> bool:
+        queued.append(lead_id)
+        return True
+
+    monkeypatch.setattr("app.routers.leads.queue_lead_alert", fake_queue)
+    return queued

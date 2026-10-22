@@ -24,6 +24,16 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
+  # Background jobs: new-lead alert emails, with retries and a sweep for anything missed.
+  worker:
+    image: ghcr.io/sufi1512/ujglobal-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["arq", "app.workers.main.WorkerSettings"]
+    env_file: /srv/ujglobal/.env
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
   postgres:
     image: pgvector/pgvector:pg16
     restart: unless-stopped
