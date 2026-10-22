@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -20,28 +18,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: site.name,
-  url: site.url,
-  email: site.email,
-  description: site.description,
-  areaServed: "Worldwide",
-};
-
+// The public site (app/(site)) and the admin panel (app/admin) each add their own chrome.
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-        />
-        <Header />
-        <main>{children}</main>
-        <Footer />
-      </body>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>{children}</body>
     </html>
   );
 }

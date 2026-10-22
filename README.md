@@ -54,12 +54,14 @@ uv run python -m app.cli deactivate --email someone@ujglobal.tech
 ```
 
 On the server: `docker compose -f infra/compose.prod.yml exec api python -m app.cli create-user ...`.
-Roles are `owner`, `editor` and `sales`. Admin endpoints use `POST /v1/auth/login`, `/refresh` and `/logout`
+Then sign in at http://localhost:3000/admin. Roles are `owner`, `editor` and `sales`; the leads inbox
+(`/admin/leads`: filters, status, assignee, notes, CSV export) is for owners and sales. Admin endpoints use `POST /v1/auth/login`, `/refresh` and `/logout`
 (see the API docs), and `infra/.env.example` lists the settings the server needs.
 
 ## Status
 
 Phase 0 scaffold: public pages (home, services, service detail, about, contact), SEO basics (metadata, JSON-LD,
 sitemap, robots), core database schema, and a contact endpoint that stores every submission as a lead.
-Phase 1 in progress: admin auth API (Argon2 passwords, JWT access tokens, rotating refresh cookie).
+Phase 1 in progress: admin auth (Argon2 passwords, JWT access tokens, rotating refresh cookie) and the
+leads inbox at `/admin/leads`.
 See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases.
