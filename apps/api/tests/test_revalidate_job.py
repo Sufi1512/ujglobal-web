@@ -22,7 +22,7 @@ def web(monkeypatch):
         tasks.httpx, "AsyncClient", lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw)
     )
     settings = get_settings()
-    monkeypatch.setattr(settings, "web_revalidate_url", "http://web:3000/api/revalidate")
+    monkeypatch.setattr(settings, "web_revalidate_url", "http://web:9006/api/revalidate")
     monkeypatch.setattr(settings, "revalidate_secret", "shared-secret")
     return calls, state
 
@@ -33,7 +33,7 @@ async def test_refresh_sends_known_tags_with_the_secret(web):
         "refreshed case-studies, services"
     )
     [request] = calls
-    assert str(request.url) == "http://web:3000/api/revalidate"
+    assert str(request.url) == "http://web:9006/api/revalidate"
     assert request.headers["X-Revalidate-Secret"] == "shared-secret"
     assert request.read() == b'{"tags":["case-studies","services"]}'
 

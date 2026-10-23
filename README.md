@@ -17,8 +17,8 @@ With Docker:
 docker compose up --build
 ```
 
-- Site: http://localhost:3000
-- API docs: http://localhost:8000/docs
+- Site: http://localhost:9006
+- API docs: http://localhost:9005/docs
 - Mailpit (test inbox, where new-lead alert emails land): http://localhost:8025
 
 Without Docker (needs Node 22, Python 3.12+, [uv](https://docs.astral.sh/uv/) and a local Postgres):
@@ -42,7 +42,7 @@ Services and case studies live in Postgres. Owners and editors edit them at `/ad
 recorded in `audit_log`. Public pages fetch content from the API at request time and cache it for up to
 5 minutes; after an edit the worker calls the web app's `/api/revalidate`, so changes show within seconds.
 Docker builds never need a running API. Running the web app without Docker, set `API_INTERNAL_URL` (if the
-API isn't on http://localhost:8000) and `REVALIDATE_SECRET` (same value as the API's).
+API isn't on http://localhost:9005) and `REVALIDATE_SECRET` (same value as the API's).
 
 Case studies default to **demo projects** and are labelled "Demo project" everywhere on the site until
 `is_demo` is turned off for real client work.
@@ -88,7 +88,7 @@ uv run python -m app.cli deactivate --email someone@ujglobal.tech
 ```
 
 On the server: `/srv/ujglobal/infra/server/stack.sh production exec api python -m app.cli create-user ...`.
-Then sign in at http://localhost:3000/admin. Roles are `owner`, `editor` and `sales`; the leads inbox
+Then sign in at http://localhost:9006/admin. Roles are `owner`, `editor` and `sales`; the leads inbox
 (`/admin/leads`: filters, status, assignee, notes, CSV export) is for owners and sales. Admin endpoints use `POST /v1/auth/login`, `/refresh` and `/logout`
 (see the API docs).
 

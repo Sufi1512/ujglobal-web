@@ -24,13 +24,13 @@ services:
     # password, JWT secret or email credentials.
     env_file: ${WEB_ENV_FILE:?}
     image: ghcr.io/sufi1512/ujglobal-web:${WEB_TAG:?}
-    expose: ["3000"]
+    expose: ["9006"]
     networks:
       default: {}
       edge:
         aliases: ["${STACK}-web"]
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9006/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -41,13 +41,13 @@ services:
   api:
     <<: *app-env
     image: ghcr.io/sufi1512/ujglobal-api:${API_TAG:?}
-    expose: ["8000"]
+    expose: ["9005"]
     networks:
       default: {}
       edge:
         aliases: ["${STACK}-api"]
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else 1)"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9005/health', timeout=4).status == 200 else 1)"]
       interval: 15s
       timeout: 5s
       retries: 5

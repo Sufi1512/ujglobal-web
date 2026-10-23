@@ -6,7 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
  * blocked by the browser even if a bug ever lets one into the page. Read by app/layout.tsx via `x-nonce`.
  */
 
-const API_ORIGIN = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").origin;
+const API_ORIGIN = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:9005").origin;
 const TURNSTILE = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? "https://challenges.cloudflare.com" : "";
 
 export function buildCsp(nonce: string, dev: boolean): string {

@@ -8,5 +8,5 @@ COPY . .
 ENV PATH="/app/.venv/bin:$PATH"
 RUN useradd --create-home app
 USER app
-EXPOSE 8000
-CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "-w", "2", "-b", "0.0.0.0:8000"]
+EXPOSE 9005
+CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "-w", "2", "-b", "0.0.0.0:9005"]
