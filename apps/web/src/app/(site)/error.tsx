@@ -8,7 +8,7 @@ export default function SiteError({ reset }: { error: Error & { digest?: string 
       <h1 className="font-display text-4xl font-semibold">Something went wrong</h1>
       <p className="mt-4 text-muted">This page could not load just now. Please try again in a moment.</p>
       <div className="mt-8 flex justify-center gap-3">
-        <button type="button" onClick={reset} className="rounded-full bg-brand px-6 py-3 font-medium text-white">
+        <button type="button" onClick={reset} className="rounded-full bg-brand px-6 py-3 font-medium text-on-brand">
           Try again
         </button>
         <Link href="/contact" className="rounded-full border border-line px-6 py-3 font-medium hover:border-link">

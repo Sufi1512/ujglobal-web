@@ -63,7 +63,7 @@ export function EditorShell({
           {savedStatus && (
             <span
               className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                savedStatus === "published" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-foreground/10 text-muted"
+                savedStatus === "published" ? "bg-brand/10 text-link" : "bg-foreground/10 text-muted"
               }`}
             >
               {savedStatus === "published" ? "Live" : "Draft"}
@@ -82,7 +82,7 @@ export function EditorShell({
           <button
             type="submit"
             disabled={state.saving || (!dirty && !isNew)}
-            className="rounded-full bg-brand px-5 py-2 font-medium text-white hover:opacity-90 disabled:opacity-50"
+            className="rounded-full bg-brand px-5 py-2 font-medium text-on-brand hover:opacity-90 disabled:opacity-50"
           >
             {isNew ? (status === "published" ? "Create and publish" : "Create draft") : status !== savedStatus ? (status === "published" ? "Save and publish" : "Save as draft") : "Save"}
           </button>

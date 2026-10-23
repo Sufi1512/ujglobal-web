@@ -49,7 +49,7 @@ export default async function CaseStudyPage({ params }: Props) {
       <h1 className="mt-3 font-display text-4xl font-semibold">{study.title}</h1>
       {study.summary && <p className="mt-4 text-lg text-muted">{study.summary}</p>}
       {study.is_demo && (
-        <p className="mt-4 rounded-xl border border-line p-4 text-sm text-muted">
+        <p className="mt-4 rounded-xl border border-line bg-surface p-4 text-sm text-muted">
           This is an in-house demo project built by UJ Global to show our approach. It is not client work.
         </p>
       )}
@@ -61,7 +61,7 @@ export default async function CaseStudyPage({ params }: Props) {
           </h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-3">
             {study.results.map((r) => (
-              <div key={r.label} className="flex flex-col rounded-2xl border border-line p-5">
+              <div key={r.label} className="flex flex-col rounded-2xl border border-line bg-surface p-5">
                 <dt className="text-sm text-muted">{r.label}</dt>
                 <dd className="order-first font-display text-3xl font-semibold text-link">{r.metric}</dd>
               </div>
@@ -116,7 +116,7 @@ export default async function CaseStudyPage({ params }: Props) {
             {study.is_demo ? "Try the live demo" : "Visit the live site"}
           </a>
         )}
-        <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-medium text-white">
+        <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-medium text-on-brand">
           Get a quote for something similar
         </Link>
       </div>

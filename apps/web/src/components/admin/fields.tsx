@@ -8,7 +8,7 @@ import { useEffect, useId, useState } from "react";
  */
 
 export const inputClass =
-  "mt-1 block w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-link";
+  "mt-1 block w-full rounded-lg border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-link";
 
 function border(error?: string) {
   return error ? "border-red-500" : "border-line";
@@ -114,7 +114,7 @@ export function Checkbox({ label, hint, checked, onChange }: { label: string; hi
 
 export function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-line p-6">
+    <section className="rounded-xl border border-line bg-surface p-6">
       <h2 className="font-medium">{title}</h2>
       {description && <p className="mt-1 text-sm text-muted">{description}</p>}
       <div className="mt-4 space-y-4">{children}</div>
@@ -234,7 +234,7 @@ export function RowsField<T extends Record<string, string>>({
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
       <ol className="mt-3 space-y-3">
         {rows.map((row, index) => (
-          <li key={index} className="rounded-lg border border-line p-4">
+          <li key={index} className="rounded-lg border border-line bg-surface p-4">
             <div className="flex items-center justify-between text-xs text-muted">
               <span>#{index + 1}</span>
               <span className="flex gap-1">

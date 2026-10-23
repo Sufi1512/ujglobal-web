@@ -91,7 +91,7 @@ export default function LeadDetailPage() {
   }
 
   const utm = Object.entries(lead.utm ?? {});
-  const control = "mt-1 block w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-link";
+  const control = "mt-1 block w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-link";
 
   return (
     <>
@@ -114,14 +114,14 @@ export default function LeadDetailPage() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="space-y-8">
-          <section aria-labelledby="message-heading" className="rounded-xl border border-line p-6">
+          <section aria-labelledby="message-heading" className="rounded-xl border border-line bg-surface p-6">
             <h2 id="message-heading" className="font-medium">
               Message
             </h2>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{lead.message}</p>
           </section>
 
-          <section aria-labelledby="notes-heading" className="rounded-xl border border-line p-6">
+          <section aria-labelledby="notes-heading" className="rounded-xl border border-line bg-surface p-6">
             <h2 id="notes-heading" className="font-medium">
               Notes
             </h2>
@@ -136,12 +136,12 @@ export default function LeadDetailPage() {
                 maxLength={5000}
                 rows={3}
                 placeholder="Call summary, next step, anything the team should know"
-                className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-link"
+                className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-link"
               />
               <button
                 type="submit"
                 disabled={saving || !note.trim()}
-                className="mt-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                className="mt-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-on-brand hover:opacity-90 disabled:opacity-50"
               >
                 Add note
               </button>
@@ -161,7 +161,7 @@ export default function LeadDetailPage() {
         </div>
 
         <aside className="space-y-6">
-          <section aria-label="Pipeline" className="space-y-4 rounded-xl border border-line p-6">
+          <section aria-label="Pipeline" className="space-y-4 rounded-xl border border-line bg-surface p-6">
             <label className="block text-xs uppercase tracking-wide text-muted">
               Status
               <select
@@ -195,7 +195,7 @@ export default function LeadDetailPage() {
             </label>
           </section>
 
-          <dl className="space-y-4 rounded-xl border border-line p-6">
+          <dl className="space-y-4 rounded-xl border border-line bg-surface p-6">
             <Field label="Email">
               <a href={`mailto:${lead.email}`} className="text-link underline">
                 {lead.email}
@@ -218,7 +218,7 @@ export default function LeadDetailPage() {
             <Field label="Consent">{lead.consent ? "Agreed to be contacted" : "Not given"}</Field>
           </dl>
           {user?.role === "owner" && (
-            <section aria-labelledby="delete-heading" className="rounded-xl border border-line p-6 text-sm">
+            <section aria-labelledby="delete-heading" className="rounded-xl border border-line bg-surface p-6 text-sm">
               <h2 id="delete-heading" className="font-medium">
                 Delete lead
               </h2>

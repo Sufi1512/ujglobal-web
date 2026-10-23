@@ -35,7 +35,7 @@ function LoginForm() {
     }
   }
 
-  const field = "mt-1 w-full rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-link";
+  const field = "mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 outline-none focus:border-link";
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={sending}
-        className="w-full rounded-full bg-brand px-6 py-2.5 font-medium text-white hover:opacity-90 disabled:opacity-60"
+        className="w-full rounded-full bg-brand px-6 py-2.5 font-medium text-on-brand hover:opacity-90 disabled:opacity-60"
       >
         {sending ? "Signing in…" : "Sign in"}
       </button>
@@ -66,7 +66,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-line p-8">
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8">
         <Logo />
         <h1 className="mt-6 font-display text-2xl font-semibold">Sign in to admin</h1>
         <p className="mt-1 text-sm text-muted">For the UJ Global team only.</p>

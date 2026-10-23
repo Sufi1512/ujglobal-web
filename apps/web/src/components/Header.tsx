@@ -21,7 +21,7 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <Link href="/contact" className="rounded-full bg-brand px-4 py-2 font-medium text-white hover:opacity-90">
+          <Link href="/contact" className="rounded-full bg-brand px-4 py-2 font-medium text-on-brand hover:opacity-90">
             Get a quote
           </Link>
         </nav>
