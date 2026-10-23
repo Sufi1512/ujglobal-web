@@ -64,3 +64,155 @@ body {
   outline: 2px solid var(--link);
   outline-offset: 2px;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* A section that stays dark pine in both themes (the footer). Tokens are re-pointed inside it. */
+.ink-scope {
+  --background: #10201c;
+  --surface: #16302a;
+  --foreground: #eef0e9;
+  --muted: #b3bfb9;
+  --line: #2a3d37;
+  --mist: #16302a;
+  --link: #6fd0af;
+  --mark: #0f6b54;
+}
+
+/*
+ * Motion. Sections fade up as they scroll into view (components/Reveal.tsx). The hidden state only
+ * applies once JavaScript has marked the page (`html.js`), so without JS everything is simply visible.
+ */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+html.js .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Faint grid and soft glows behind hero sections. */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 75% 65% at 65% 35%, #000 15%, transparent 75%);
+}
+.glow-brand {
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand) 22%, transparent), transparent 62%);
+}
+.glow-signal {
+  background: radial-gradient(circle, color-mix(in srgb, var(--signal) 28%, transparent), transparent 62%);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    transform: scaleY(0.15);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-float-slow {
+  animation: float 8s ease-in-out 1s infinite;
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+.animate-pop {
+  animation: pop 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.animate-rise {
+  transform-origin: bottom;
+  animation: rise 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.animate-pulse-ring {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+.typing-dot {
+  animation: blink 1.2s infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.draw-line {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: dash 2.4s ease-out 0.3s forwards;
+}
+.group:hover .group-hover-pause,
+.group:focus-within .group-hover-pause {
+  animation-play-state: paused;
+}
+
+/* People who ask for less motion get none: no scroll fades, loops or smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

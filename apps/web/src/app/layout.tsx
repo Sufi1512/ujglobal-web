@@ -29,7 +29,12 @@ export const viewport: Viewport = {
 // The public site (app/(site)) and the admin panel (app/admin) each add their own chrome.
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    // The inline script marks the page as JS-enabled before first paint, so scroll fades never hide
+    // content from visitors (or crawlers) without JavaScript.
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>{children}</body>
     </html>
   );

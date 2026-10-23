@@ -10,6 +10,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // Always put the title, description and canonical in <head> before the page streams, for every
+  // visitor. Next.js otherwise streams them into <body> for most user agents, which some crawlers and
+  // link previews miss. The pages are small, so the cost is negligible.
+  htmlLimitedBots: /.*/,
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },
