@@ -12,6 +12,8 @@ RUN useradd --create-home app
 COPY infra/single-port/live.env /app/settings/defaults.env
 COPY .env.production.example .env* /app/settings/
 RUN cd /app/settings && find . -name '.env?*' -delete \
-    && chown -R root:app /app/settings && chmod 750 /app/settings && chmod 640 /app/settings/*
+    && chown -R root:app /app/settings && chmod -R u=rwX,g=rX,o= /app/settings
+# chmod -R, not /app/settings/*: the shell's * skips dotfiles, so .env would keep the owner-only mode
+# panels often save it with, and the app user couldn't read it.
 USER app
 CMD ["arq", "app.workers.main.WorkerSettings"]
