@@ -141,11 +141,14 @@ jobs:
           grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' .env.production.example \
             | sed -e 's/^LEAD_ALERT_RECIPIENTS=.*/LEAD_ALERT_RECIPIENTS=[]/' -e 's#^SITE_URL=.*#SITE_URL=https://ci.example#' > .env
           bash infra/server/gen-secrets.sh >> .env
+          chmod 600 .env  # hosting panels often save it readable by its owner only
           docker build -q -f infra/single-port/api.Dockerfile -t live-api .
           docker run --rm live-api python -c "from app.core.config import get_settings as g; s = g(); \
             assert s.environment == 'production' and s.redis_url == 'redis://redis:6379/0', s; \
             assert s.cors_origins == ['https://ci.example'] and s.admin_base_url == 'https://ci.example'; \
             assert s.database_url.startswith('postgresql+asyncpg://'); print('settings OK')"
           docker run --rm live-api sh -c 'ls -A /app/settings' | sort | tr '\n' ' ' | grep -qx '.env defaults.env '
+          docker build -q -f infra/single-port/worker.Dockerfile -t live-worker .
+          docker run --rm live-worker python -c "from app.core.config import get_settings as g; assert g().environment == 'production'; print('worker OK')"
           docker build -q -f infra/single-port/gateway.Dockerfile -t live-gateway .
           docker run --rm live-gateway caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
