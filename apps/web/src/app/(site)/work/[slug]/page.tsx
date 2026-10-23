@@ -1,9 +1,15 @@
+import { ArrowLeft, ArrowRight, Hammer, Info, Target } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { DemoBadge } from "@/components/CaseStudyCard";
-import { getCaseStudy } from "@/lib/content";
+import { CaseStudyCard, DemoBadge } from "@/components/CaseStudyCard";
+import { CtaPanel } from "@/components/CtaPanel";
+import { PageHero } from "@/components/ui/PageHero";
+import { Reveal } from "@/components/ui/Reveal";
+import { ServiceVisual } from "@/components/visuals/ServiceVisual";
+import { projectCover } from "@/lib/catalog";
+import { getCaseStudies, getCaseStudy } from "@/lib/content";
 import { site } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -22,8 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CaseStudyPage({ params }: Props) {
-  const study = await load((await params).slug);
+  const [study, all] = await Promise.all([load((await params).slug), getCaseStudies()]);
   if (!study) notFound();
+  const more = all.filter((s) => s.slug !== study.slug).slice(0, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -35,91 +42,129 @@ export default async function CaseStudyPage({ params }: Props) {
   };
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-20">
+    <article>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <nav aria-label="Breadcrumb" className="text-sm text-muted">
-        <Link href="/work" className="hover:text-foreground">
-          Work
-        </Link>{" "}
-        / {study.title}
-      </nav>
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        {study.is_demo ? <DemoBadge /> : study.client_name && <span className="text-sm text-muted">{study.client_name}</span>}
-      </div>
-      <h1 className="mt-3 font-display text-4xl font-semibold">{study.title}</h1>
-      {study.summary && <p className="mt-4 text-lg text-muted">{study.summary}</p>}
+      <PageHero
+        breadcrumb={
+          <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted">
+            <Link href="/work" className="inline-flex items-center gap-1.5 hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" aria-hidden /> All work
+            </Link>
+          </nav>
+        }
+        eyebrow={study.is_demo ? "Demo project" : (study.client_name ?? "Case study")}
+        title={study.title}
+        intro={study.summary}
+        aside={<ServiceVisual kind={projectCover(study.slug)} />}
+      >
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          {study.is_demo && <DemoBadge />}
+          {study.services.map((s) => (
+            <Link key={s.slug} href={`/services/${s.slug}`} className="rounded-full bg-brand/10 px-3 py-1 text-sm font-medium text-link hover:underline">
+              {s.title}
+            </Link>
+          ))}
+        </div>
+      </PageHero>
+
       {study.is_demo && (
-        <p className="mt-4 rounded-xl border border-line bg-surface p-4 text-sm text-muted">
-          This is an in-house demo project built by UJ Global to show our approach. It is not client work.
-        </p>
+        <div className="mx-auto max-w-6xl px-4">
+          <p className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-link" aria-hidden />
+            This is an in-house demo project built by UJ Global to show our approach. It is not client work, and the
+            results are from our own testing.
+          </p>
+        </div>
       )}
 
       {study.results.length > 0 && (
-        <section aria-labelledby="results-heading" className="mt-12">
-          <h2 id="results-heading" className="font-display text-2xl font-semibold">
+        <section aria-labelledby="results-heading" className="mx-auto max-w-6xl px-4 py-12">
+          <h2 id="results-heading" className="sr-only">
             Results
           </h2>
-          <dl className="mt-6 grid gap-4 sm:grid-cols-3">
-            {study.results.map((r) => (
-              <div key={r.label} className="flex flex-col rounded-2xl border border-line bg-surface p-5">
-                <dt className="text-sm text-muted">{r.label}</dt>
-                <dd className="order-first font-display text-3xl font-semibold text-link">{r.metric}</dd>
-              </div>
+          <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {study.results.map((r, i) => (
+              <Reveal key={r.label} delay={i * 100} className="flex flex-col rounded-3xl bg-brand p-8 text-on-brand">
+                <dt className="mt-2 opacity-90">{r.label}</dt>
+                <dd className="order-first font-display text-5xl font-bold">{r.metric}</dd>
+              </Reveal>
             ))}
           </dl>
         </section>
       )}
 
-      {study.challenge && (
-        <section aria-labelledby="challenge-heading" className="mt-12">
-          <h2 id="challenge-heading" className="font-display text-2xl font-semibold">
-            The challenge
-          </h2>
-          <p className="mt-4 whitespace-pre-line leading-relaxed">{study.challenge}</p>
+      {(study.challenge || study.solution) && (
+        <section className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-2">
+          {study.challenge && (
+            <Reveal className="rounded-3xl border border-line bg-surface p-8 sm:p-10">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-signal text-on-signal">
+                <Target className="h-6 w-6" aria-hidden />
+              </span>
+              <h2 className="mt-6 font-display text-2xl font-bold">The challenge</h2>
+              <p className="mt-3 whitespace-pre-line leading-relaxed text-muted">{study.challenge}</p>
+            </Reveal>
+          )}
+          {study.solution && (
+            <Reveal delay={100} className="rounded-3xl border border-line bg-surface p-8 sm:p-10">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand text-on-brand">
+                <Hammer className="h-6 w-6" aria-hidden />
+              </span>
+              <h2 className="mt-6 font-display text-2xl font-bold">What we built</h2>
+              <p className="mt-3 whitespace-pre-line leading-relaxed text-muted">{study.solution}</p>
+            </Reveal>
+          )}
         </section>
       )}
 
-      {study.solution && (
-        <section aria-labelledby="solution-heading" className="mt-12">
-          <h2 id="solution-heading" className="font-display text-2xl font-semibold">
-            What we built
-          </h2>
-          <p className="mt-4 whitespace-pre-line leading-relaxed">{study.solution}</p>
+      {study.tech_stack.length > 0 && (
+        <section aria-labelledby="stack-heading" className="mx-auto max-w-6xl px-4 py-8">
+          <Reveal className="flex flex-col gap-5 rounded-3xl bg-mist p-8 sm:flex-row sm:items-center sm:p-10">
+            <h2 id="stack-heading" className="shrink-0 font-display text-xl font-bold sm:w-48">
+              Built with
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {study.tech_stack.map((t) => (
+                <li key={t} className="rounded-full border border-line bg-surface px-4 py-2 font-display text-sm font-medium">
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </Reveal>
         </section>
       )}
 
-      {(study.tech_stack.length > 0 || study.services.length > 0) && (
-        <section aria-labelledby="stack-heading" className="mt-12">
-          <h2 id="stack-heading" className="font-display text-2xl font-semibold">
-            Stack and services
+      {(study.live_url || study.services.length > 0) && (
+        <div className="mx-auto flex max-w-6xl flex-wrap gap-3 px-4 py-8">
+          {study.live_url && (
+            <a href={study.live_url} rel="noopener" target="_blank" className="rounded-xl border border-line bg-surface px-6 py-3.5 font-semibold hover:border-link">
+              {study.is_demo ? "Try the live demo" : "Visit the live site"}
+            </a>
+          )}
+          <Link
+            href={study.services[0] ? `/contact?service=${study.services[0].slug}` : "/contact"}
+            className="group inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 font-semibold text-on-brand"
+          >
+            Get a quote for something similar <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+          </Link>
+        </div>
+      )}
+
+      {more.length > 0 && (
+        <section aria-labelledby="more-heading" className="mx-auto max-w-6xl px-4 py-16">
+          <h2 id="more-heading" className="font-display text-3xl font-bold tracking-tight">
+            More projects
           </h2>
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {study.tech_stack.map((t) => (
-              <li key={t} className="rounded-full border border-line px-3 py-1 text-sm">
-                {t}
-              </li>
-            ))}
-            {study.services.map((s) => (
-              <li key={s.slug}>
-                <Link href={`/services/${s.slug}`} className="inline-block rounded-full bg-brand/10 px-3 py-1 text-sm text-link hover:underline">
-                  {s.title}
-                </Link>
-              </li>
+          <ul className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {more.map((s, i) => (
+              <Reveal as="li" key={s.slug} delay={i * 100}>
+                <CaseStudyCard study={s} />
+              </Reveal>
             ))}
           </ul>
         </section>
       )}
 
-      <div className="mt-14 flex flex-wrap gap-3">
-        {study.live_url && (
-          <a href={study.live_url} rel="noopener" target="_blank" className="rounded-full border border-line px-6 py-3 font-medium hover:border-link">
-            {study.is_demo ? "Try the live demo" : "Visit the live site"}
-          </a>
-        )}
-        <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-medium text-on-brand">
-          Get a quote for something similar
-        </Link>
-      </div>
+      <CtaPanel title="Have a similar project?" />
     </article>
   );
 }
