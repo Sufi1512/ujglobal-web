@@ -1,4 +1,5 @@
-# UJ Global, LIVE SITE. Settings: .env.production (copy .env.production.example and fill it in).
+# UJ Global, LIVE SITE. Settings come from your hosting panel's environment variables, or from a `.env`
+# file next to this one (copy .env.production.example to .env and fill it in).
 #
 #   docker compose up -d --build
 #
@@ -10,5 +11,4 @@
 name: ujglobal
 
 include:
-  - path: infra/compose.live.yml
-    env_file: .env.production
+  - infra/compose.live.yml

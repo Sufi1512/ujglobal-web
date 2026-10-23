@@ -17,7 +17,7 @@ stay on your machine (git ignores them):
 | File | Used by | For |
 | --- | --- | --- |
 | `.env.local` | `docker compose -f compose.dev.yml up` | your computer (safe test values) |
-| `.env.production` | `docker compose up` | the live site ([docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md)) |
+| `.env` (or panel environment variables) | `docker compose up` | the live site ([docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md)) |
 
 With Docker:
 
@@ -116,7 +116,7 @@ Two ways to run it on your own server; GitHub only tests the code and never depl
 
 | Path | What |
 | --- | --- |
-| `compose.yml` + `.env.production` | The live site: one port (9005), built on the server, using your PostgreSQL (stack in `infra/compose.live.yml`, routing in `infra/single-port/`) |
+| `compose.yml` + `.env` | The live site: one port (9005), built on the server, using your PostgreSQL (stack in `infra/compose.live.yml`, routing in `infra/single-port/`) |
 | `compose.dev.yml` + `.env.local` | Local development, with its own Postgres, Redis and Mailpit (stack in `infra/compose.local.yml`) |
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |

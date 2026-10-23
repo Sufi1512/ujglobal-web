@@ -1,5 +1,5 @@
-# The live site's stack, loaded by the root compose.yml together with .env.production.
-# Every ${...} below comes from that file. Paths are relative to this folder.
+# The live site's stack, loaded by the root compose.yml with its settings (panel environment variables or .env).
+# Every ${...} below comes from those settings. Paths are relative to this folder.
 #
 # Only the `gateway` publishes a port: PUBLIC_PORT (default 9005), on 127.0.0.1 unless PUBLIC_BIND says
 # otherwise. It sends /v1/* and /health to the API and everything else to the website, on one domain.
@@ -8,14 +8,14 @@
 
 x-api-env: &api-env
   ENVIRONMENT: production
-  DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env.production, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
+  DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
   DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
   REDIS_URL: redis://redis:6379/0
-  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env.production (infra/server/gen-secrets.sh makes it)}
-  IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env.production}
-  REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env.production}
-  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY in .env.production}
-  CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env.production, e.g. https://ujglobal.tech}"]'
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
+  IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
+  REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
+  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY in .env or your panel environment variables}
+  CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
   ADMIN_BASE_URL: ${SITE_URL}
   COOKIE_SECURE: "true"
   WEB_REVALIDATE_URL: http://web:9006/api/revalidate

@@ -83,9 +83,9 @@ jobs:
           ENV_FILE=/tmp/app.env WEB_ENV_FILE=/tmp/app.env WEB_TAG=x API_TAG=x docker compose -f infra/compose.app.yml --env-file /tmp/app.env config --quiet
           sudo mkdir -p /srv/ujglobal/edge && sudo touch /srv/ujglobal/edge/.env
           docker compose -f infra/edge/compose.yml config --quiet
-          # Live site: compose.yml + .env.production (from the example, with generated secrets)
-          grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' .env.production.example > .env.production
-          bash infra/server/gen-secrets.sh >> .env.production
+          # Live site: compose.yml + .env (from the example, with generated secrets)
+          grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' .env.production.example > .env
+          bash infra/server/gen-secrets.sh >> .env
           docker compose config --format json > /tmp/live.json
           # Only the gateway publishes a port (127.0.0.1:9005), the API gets the database settings, and the
           # website gets no secrets.
