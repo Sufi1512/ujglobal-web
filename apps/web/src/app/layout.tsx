@@ -36,7 +36,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     // content from visitors (or crawlers) without JavaScript.
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Browsers hide nonce values from page scripts (a CSP protection), so React sees "" in the browser
+            where the server sent the real value; that one difference is expected, not a bug. */}
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
+        />
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>{children}</body>
     </html>
