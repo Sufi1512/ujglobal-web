@@ -6,3 +6,6 @@ __pycache__/
 .env.local
 *.log
 .DS_Store
+
+# Local Redis snapshot
+dump.rdb
