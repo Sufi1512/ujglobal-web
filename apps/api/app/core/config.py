@@ -126,7 +126,7 @@ class Settings(BaseSettings):
             ]
             if self.lead_alert_recipients and placeholders:
                 raise ValueError(
-                    f"Replace the example value of {' and '.join(placeholders)} in .env.production with your "
+                    f"Replace the example value of {' and '.join(placeholders)} (.env or the panel's environment variables) with your "
                     "email provider's details, or set LEAD_ALERT_RECIPIENTS=[] to turn lead alerts off"
                 )
             if self.lead_alert_recipients and self.smtp_host.strip() in {"", "localhost", "127.0.0.1"}:
