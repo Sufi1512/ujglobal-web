@@ -23,14 +23,14 @@ services:
 
   api:
     build: ./apps/api
-    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 9005 --reload"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ujglobal
-      CORS_ORIGINS: '["http://localhost:3000"]'
+      CORS_ORIGINS: '["http://localhost:9006"]'
       COOKIE_SECURE: "false"
       REDIS_URL: redis://redis:6379/0
     volumes: ["./apps/api/app:/app/app", "./apps/api/alembic:/app/alembic"]
-    ports: ["8000:8000"]
+    ports: ["9005:9005"]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
@@ -48,8 +48,8 @@ services:
       SMTP_PORT: "1025"
       SMTP_SECURITY: none
       LEAD_ALERT_RECIPIENTS: '["team@ujglobal.tech"]'
-      ADMIN_BASE_URL: http://localhost:3000
-      WEB_REVALIDATE_URL: http://web:3000/api/revalidate
+      ADMIN_BASE_URL: http://localhost:9006
+      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
     volumes: ["./apps/api/app:/app/app"]
     depends_on:
       api: { condition: service_started }
@@ -60,12 +60,12 @@ services:
     working_dir: /app
     command: sh -c "npm ci && npm run dev"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:9005
       # Server-side rendering reaches the API inside the Docker network.
-      API_INTERNAL_URL: http://api:8000
+      API_INTERNAL_URL: http://api:9005
       REVALIDATE_SECRET: dev-only-revalidate-secret
     volumes: ["./apps/web:/app", "/app/node_modules"]
-    ports: ["3000:3000"]
+    ports: ["9006:9006"]
     depends_on: [api]
 
 volumes:

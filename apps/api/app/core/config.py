@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     environment: str = "local"
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ujglobal"
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:9006"]
     ip_hash_salt: str = "change-me"
 
     # Admin auth: short-lived JWT access tokens plus an opaque refresh token in an httpOnly cookie.
@@ -63,11 +63,11 @@ class Settings(BaseSettings):
     lead_retention_days: int = 730
 
     # Base URL of the admin panel, used for "open in inbox" links in alerts.
-    admin_base_url: str = "http://localhost:3000"
+    admin_base_url: str = "http://localhost:9006"
 
     # After content changes the worker asks the Next.js site to refresh its cached pages.
     # Empty URL turns this off; pages then still refresh on their own within 5 minutes.
-    web_revalidate_url: str | None = "http://localhost:3000/api/revalidate"
+    web_revalidate_url: str | None = "http://localhost:9006/api/revalidate"
     revalidate_secret: str = "dev-only-revalidate-secret"
 
     @model_validator(mode="after")

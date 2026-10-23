@@ -14,7 +14,7 @@ export type ContentTag = (typeof CONTENT_TAGS)[number];
 const REVALIDATE_SECONDS = 300;
 
 // Inside Docker the web container reaches the API by service name; the browser uses the public URL.
-const API_BASE = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_BASE = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:9005";
 
 export type ProcessStep = { title: string; text: string };
 export type Faq = { question: string; answer: string };
