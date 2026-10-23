@@ -1,0 +1,30 @@
+# The server's front door: one Caddy for every UJ Global stack, the only container with public ports.
+# Run by infra/server/deploy.sh: docker compose -f /srv/ujglobal/infra/edge/compose.yml up -d
+name: ujglobal-edge
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    env_file: /srv/ujglobal/edge/.env
+    volumes:
+      # The folder, not the file: deploys replace the Caddyfile, and a single-file mount would keep the old one.
+      - ./:/etc/caddy:ro
+      # Cloudflare origin certificate (see docs/DEPLOY.md, step 3), readable only by root on the host.
+      - /srv/ujglobal/edge/certs:/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+networks:
+  edge:
+    name: ujglobal-edge
+    external: true
+
+volumes:
+  caddy_data:
+  caddy_config:

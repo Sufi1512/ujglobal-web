@@ -55,7 +55,7 @@ class Settings(BaseSettings):
                 raise ValueError("IP_HASH_SALT must be changed outside local development")
             if self.web_revalidate_url and self.revalidate_secret == "dev-only-revalidate-secret":
                 raise ValueError("REVALIDATE_SECRET must be set to a random value shared with the web app")
-            if self.lead_alert_recipients and self.smtp_host in {"localhost", "127.0.0.1"}:
+            if self.lead_alert_recipients and self.smtp_host.strip() in {"", "localhost", "127.0.0.1"}:
                 raise ValueError(
                     "SMTP_HOST must point at the email provider, "
                     "or set LEAD_ALERT_RECIPIENTS=[] to turn lead alerts off"

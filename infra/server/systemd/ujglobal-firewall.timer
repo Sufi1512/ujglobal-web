@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh the Cloudflare IP ranges weekly
+
+[Timer]
+OnCalendar=Mon *-*-* 04:23:00 UTC
+Persistent=true
+Unit=ujglobal-firewall-refresh.service
+
+[Install]
+WantedBy=timers.target

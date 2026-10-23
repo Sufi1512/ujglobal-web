@@ -1,0 +1,7 @@
+[Unit]
+Description=Refresh the Cloudflare-only firewall rules
+After=docker.service ujglobal-firewall.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/ujglobal-firewall-cloudflare

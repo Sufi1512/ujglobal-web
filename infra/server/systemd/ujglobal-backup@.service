@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up the UJ Global %i database
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=deploy
+ExecStart=/srv/ujglobal/infra/server/backup.sh %i

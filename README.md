@@ -52,8 +52,8 @@ Case studies default to **demo projects** and are labelled "Demo project" everyw
 Slow work runs in the `worker` container (ARQ on Redis), started by `docker compose up`. Right now it emails the
 team about every new lead; the lead is always saved first, failed emails retry with back-off, and a sweep every
 minute catches anything missed. Locally the emails go to Mailpit. In production set the `SMTP_*`,
-`EMAIL_FROM` and `LEAD_ALERT_RECIPIENTS` settings from `infra/.env.example` (Resend or Postmark both work over
-SMTP). Without Docker: `cd apps/api && uv run arq app.workers.main.WorkerSettings`.
+`EMAIL_FROM` and `LEAD_ALERT_RECIPIENTS` settings in the server's `.env` (see docs/DEPLOY.md; Resend or
+Postmark both work over SMTP). Without Docker: `cd apps/api && uv run arq app.workers.main.WorkerSettings`.
 
 ## Privacy
 
@@ -87,17 +87,30 @@ uv run python -m app.cli set-password --email you@ujglobal.tech   # also signs o
 uv run python -m app.cli deactivate --email someone@ujglobal.tech
 ```
 
-On the server: `docker compose -f infra/compose.prod.yml exec api python -m app.cli create-user ...`.
+On the server: `/srv/ujglobal/infra/server/stack.sh production exec api python -m app.cli create-user ...`.
 Then sign in at http://localhost:3000/admin. Roles are `owner`, `editor` and `sales`; the leads inbox
 (`/admin/leads`: filters, status, assignee, notes, CSV export) is for owners and sales. Admin endpoints use `POST /v1/auth/login`, `/refresh` and `/logout`
-(see the API docs), and `infra/.env.example` lists the settings the server needs.
+(see the API docs).
+
+## Deploying
+
+One server runs production (ujglobal.tech) and staging (staging.ujglobal.tech) behind Cloudflare. Every
+merge to `main` builds the images and deploys staging; production deploys when you run **Actions → Deploy
+production**. Setup, day-to-day tasks, backups and restores: [docs/DEPLOY.md](docs/DEPLOY.md).
+
+| Path | What |
+| --- | --- |
+| `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
+| `infra/edge/` | The shared Caddy in front of both stacks |
+| `infra/server/` | `setup.sh` (one-time), `new-env.sh`, `deploy.sh`, `stack.sh`, `backup.sh`, `restore.sh`, firewall |
+| `.github/workflows/` | `ci.yml` (tests, images, staging), `deploy.yml` (shared), `deploy-production.yml` |
 
 ## Status
 
 Phase 0 scaffold: public pages (home, services, service detail, about, contact), SEO basics (metadata, JSON-LD,
 sitemap, robots), core database schema, and a contact endpoint that stores every submission as a lead.
 Phase 1 in progress: admin auth (Argon2 passwords, JWT access tokens, rotating refresh cookie), the
-leads inbox at `/admin/leads`, new-lead alert emails sent by the background worker, and services and case
-studies managed through the admin API, with `/work` pages for the portfolio.
+leads inbox at `/admin/leads`, new-lead alert emails, services and case studies edited in the admin with `/work`
+pages for the portfolio, the Signal brand, legal pages, and the deploy pipeline (docs/DEPLOY.md).
 See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) for the full plan and the remaining phases, and
 [docs/BRAND.md](docs/BRAND.md) for the brand (logo, colours, type).
