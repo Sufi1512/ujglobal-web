@@ -57,6 +57,7 @@ How the site reaches your PostgreSQL:
 | Your PostgreSQL runs... | Host in the URLs | Also needed |
 | --- | --- | --- |
 | in Docker, publishing port 5432 on this server | `host.docker.internal` | nothing |
+| in Docker **without** a published port (the panel shows just `5432/tcp`) | `host.docker.internal` | Publish it on this server only: recreate the PostgreSQL container with port `127.0.0.1:5432:5432` (its data volume stays). Otherwise the site's containers can't reach it |
 | directly on this server (installed with apt) | `host.docker.internal` | In `postgresql.conf` set `listen_addresses = '*'` (or add `172.17.0.1`); in `pg_hba.conf` add `host all all 172.16.0.0/12 scram-sha-256`; restart PostgreSQL. Keep 5432 closed to the internet in your firewall |
 | on another server or a managed service | its hostname | allow this server's IP; add `?ssl=require` to the URL |
 
@@ -98,7 +99,9 @@ Sign in at `https://your-domain/admin`. Owners and sales users set up two-factor
 | Message | Fix |
 | --- | --- |
 | `set ... in .env or the panel's environment variables` | That setting is missing or empty: add it in the panel, or in `.env` (step 1) |
-| `additional property include is not allowed` | Docker Compose is older than 2.24: update Docker |
+| API logs say `DATABASE_URL is required` and `received none of the site's settings` | The settings didn't reach the container. Check they're saved in this app's environment variables in the panel, then redeploy. A container you started by hand from the `ujglobal-api` image (not through the deploy) never gets them: remove it |
+| Deploy fails with `container ...-api-1 is unhealthy` | Open that container's logs: its last lines say why the API stopped (one of the rows here) |
+| `additional property ... is not allowed` (e.g. on `env_file`) | Docker Compose is older than 2.24: update Docker |
 | API keeps restarting; logs say `Could not reach PostgreSQL` or `password authentication failed` | Check the host and password in `DATABASE_URL` (and `DATABASE_ADMIN_URL`), and the PostgreSQL settings in step 2 |
 | Logs say `isn't allowed to create it` | Set `DATABASE_ADMIN_URL`, give the user `CREATEDB`, or create the database once (step 2) |
 | `port is already allocated` on 9005 | Something else uses 9005: change `PUBLIC_PORT` and point the domain at that port instead |
