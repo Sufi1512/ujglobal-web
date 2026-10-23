@@ -116,6 +116,19 @@ class Settings(BaseSettings):
                 raise ValueError("IP_HASH_SALT must be changed outside local development")
             if self.web_revalidate_url and self.revalidate_secret == "dev-only-revalidate-secret":
                 raise ValueError("REVALIDATE_SECRET must be set to a random value shared with the web app")
+            placeholders = [
+                name
+                for name, value in (
+                    ("SMTP_HOST", self.smtp_host),
+                    ("SMTP_PASSWORD", self.smtp_password or ""),
+                )
+                if "REPLACE" in value
+            ]
+            if self.lead_alert_recipients and placeholders:
+                raise ValueError(
+                    f"Replace the example value of {' and '.join(placeholders)} in .env.production with your "
+                    "email provider's details, or set LEAD_ALERT_RECIPIENTS=[] to turn lead alerts off"
+                )
             if self.lead_alert_recipients and self.smtp_host.strip() in {"", "localhost", "127.0.0.1"}:
                 raise ValueError(
                     "SMTP_HOST must point at the email provider, "

@@ -35,7 +35,7 @@ nano .env.production
 | `DATABASE_URL` | **required, no default**: the site's user and database in your PostgreSQL, e.g. `postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal` (`postgres://...` works too). The API refuses to start without it |
 | `DATABASE_ADMIN_URL` | optional, see step 2 |
 | `JWT_SECRET`, `IP_HASH_SALT`, `REVALIDATE_SECRET`, `MFA_ENCRYPTION_KEY` | the four lines from `gen-secrets.sh`. Keep `MFA_ENCRYPTION_KEY` the same forever |
-| `SMTP_*`, `LEAD_ALERT_RECIPIENTS` | your email provider (docs/DEPLOY.md, step 5), or `LEAD_ALERT_RECIPIENTS=[]` to switch alerts off for now |
+| `SMTP_*`, `EMAIL_FROM`, `LEAD_ALERT_RECIPIENTS` | alerts go to `hello@ujglobal.tech` by default. Replace `SMTP_HOST` and `SMTP_PASSWORD` for the service that hosts that mailbox (Google Workspace, Zoho, Hostinger, Microsoft 365 or Resend: the example lists each one's settings), or set `LEAD_ALERT_RECIPIENTS=[]` to switch alerts off for now. The API won't start with the example's `REPLACE_...` values while alerts are on |
 | `PUBLIC_PORT` | `9005` (default), the port your panel points the domain at |
 | `PUBLIC_BIND` | `127.0.0.1` (default). `0.0.0.0` only if the panel connects from another machine or can't reach 127.0.0.1; then allow the port from the panel's address alone |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | optional: Cloudflare's human check on the contact form |
