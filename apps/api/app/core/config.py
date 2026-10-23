@@ -13,6 +13,10 @@ class Settings(BaseSettings):
 
     environment: str = "local"
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ujglobal"
+    # Optional admin connection (e.g. the `postgres` superuser), used only at start-up to create the
+    # site's database user and database when they don't exist yet. Without it the API creates just the
+    # database, which needs the DATABASE_URL user to be allowed to (CREATEDB).
+    database_admin_url: str | None = None
     cors_origins: list[str] = ["http://localhost:9006"]
     ip_hash_salt: str = "change-me"
 

@@ -1,4 +1,4 @@
-# Deploying behind one port (9005) with your existing PostgreSQL
+# Deploying the live site: one port (9005), your existing PostgreSQL
 
 The root `compose.yml` is the live site. Point your hosting panel's domain at **port 9005** and it serves everything: website, API and admin. It uses **the PostgreSQL you already have**; it doesn't start its own database and doesn't use port 5432.
 
@@ -15,54 +15,59 @@ Visitor -> hosting panel (HTTPS, domain) -> 127.0.0.1:9005 -> gateway (Caddy) --
                                                        Redis: inside the stack, no published port
 ```
 
-The website and API share the domain, so the browser calls the API on the same address: no CORS setup, and the admin's sign-in cookie stays first-party. Images are built on the server from this repository; nothing comes from a registry. Local development uses `compose.dev.yml` instead.
+The website and API share the domain, so the browser calls the API on the same address: no CORS setup, and the admin's sign-in cookie stays first-party. Images are built on the server from this repository; nothing comes from a registry.
 
-## 1. Prepare a database in your PostgreSQL
+**Two settings files.** The live site reads **`.env.production`**; your computer reads **`.env.local`** (with `compose.dev.yml`). Both have a committed example next to them; git ignores the real files. Needs Docker Compose 2.20 or newer (`docker compose version`).
 
-PostgreSQL 13 or newer. Create an empty database and a user just for the site (in `psql` as an admin):
+## 1. Settings: `.env.production`
 
-```sql
-CREATE USER ujglobal WITH PASSWORD 'a-long-random-password';
-CREATE DATABASE ujglobal OWNER ujglobal;
+On the server, in the repository folder:
+
+```bash
+cp .env.production.example .env.production
+bash infra/server/gen-secrets.sh        # prints the four secrets to paste in
+nano .env.production
 ```
-
-The API creates all its tables itself on first start.
-
-How the site reaches it (`DATABASE_URL` in step 2):
-
-| Your PostgreSQL runs... | Host to use in `DATABASE_URL` | Also needed |
-| --- | --- | --- |
-| in Docker, publishing port 5432 on this server | `host.docker.internal` | nothing |
-| directly on this server (installed with apt) | `host.docker.internal` | In `postgresql.conf` set `listen_addresses = '*'` (or add `172.17.0.1`); in `pg_hba.conf` add `host ujglobal ujglobal 172.16.0.0/12 scram-sha-256`; restart PostgreSQL. Keep port 5432 closed to the internet in your firewall. |
-| on another server or a managed service | its hostname | allow this server's IP; add `?ssl=require` to the URL |
-
-## 2. Settings
-
-Enter these in your hosting panel's environment settings, or copy `deploy.env.example` to `.env` next to `compose.yml` and fill it in. The deploy stops with a clear message if a required one is missing.
 
 | Setting | Value |
 | --- | --- |
 | `SITE_URL` | your domain with https, e.g. `https://ujglobal.tech` |
-| `DATABASE_URL` | `postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal` |
-| `JWT_SECRET`, `IP_HASH_SALT`, `REVALIDATE_SECRET`, `MFA_ENCRYPTION_KEY` | run `bash infra/server/gen-secrets.sh` and paste its four lines (or any 64 random hex characters each) |
-| `SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `LEAD_ALERT_RECIPIENTS` | your email provider (docs/DEPLOY.md, step 5); required unless `LEAD_ALERT_RECIPIENTS=[]` |
+| `DATABASE_URL` | the site's user and database in your PostgreSQL, e.g. `postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal` |
+| `DATABASE_ADMIN_URL` | optional, see step 2 |
+| `JWT_SECRET`, `IP_HASH_SALT`, `REVALIDATE_SECRET`, `MFA_ENCRYPTION_KEY` | the four lines from `gen-secrets.sh`. Keep `MFA_ENCRYPTION_KEY` the same forever |
+| `SMTP_*`, `LEAD_ALERT_RECIPIENTS` | your email provider (docs/DEPLOY.md, step 5), or `LEAD_ALERT_RECIPIENTS=[]` to switch alerts off for now |
 | `PUBLIC_PORT` | `9005` (default), the port your panel points the domain at |
-| `PUBLIC_BIND` | `127.0.0.1` (default). Use `0.0.0.0` only if the panel connects from another machine or can't reach 127.0.0.1, and then allow the port from the panel's address alone |
+| `PUBLIC_BIND` | `127.0.0.1` (default). `0.0.0.0` only if the panel connects from another machine or can't reach 127.0.0.1; then allow the port from the panel's address alone |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | optional: Cloudflare's human check on the contact form |
 
-Keep `MFA_ENCRYPTION_KEY` the same forever after the first deploy: changing it turns everyone's two-factor sign-in off.
+If your hosting panel rebuilds the folder on every deploy, use its "environment file" or "persistent file" option to keep `.env.production` there. The deploy stops with a clear "set X in .env.production" message if something required is missing.
+
+## 2. The database is created for you
+
+On every start the API checks your PostgreSQL (13 or newer), **creates the database if it doesn't exist**, then creates or updates its tables. Pick one:
+
+- **Simplest:** set `DATABASE_ADMIN_URL` to an admin connection, e.g. `postgresql+asyncpg://postgres:ADMIN_PASSWORD@host.docker.internal:5432/postgres`. The API then also creates the site's user from `DATABASE_URL`, with that password. You can remove the admin URL after the first successful start.
+- **Without an admin URL:** create the user once, allowed to create its own database: `CREATE USER ujglobal WITH PASSWORD '...' CREATEDB;`. The API creates the database.
+- **Or** create both yourself (`CREATE DATABASE ujglobal OWNER ujglobal;`); the API sees they exist and carries on.
+
+How the site reaches your PostgreSQL:
+
+| Your PostgreSQL runs... | Host in the URLs | Also needed |
+| --- | --- | --- |
+| in Docker, publishing port 5432 on this server | `host.docker.internal` | nothing |
+| directly on this server (installed with apt) | `host.docker.internal` | In `postgresql.conf` set `listen_addresses = '*'` (or add `172.17.0.1`); in `pg_hba.conf` add `host all all 172.16.0.0/12 scram-sha-256`; restart PostgreSQL. Keep 5432 closed to the internet in your firewall |
+| on another server or a managed service | its hostname | allow this server's IP; add `?ssl=require` to the URL |
 
 ## 3. Deploy
 
-Most panels run this for you on every deploy. By hand, from the repository folder:
+Most panels run this on every deploy. By hand, from the repository folder:
 
 ```bash
 docker compose up -d --build
-docker compose ps                      # gateway, web, api, worker, redis: all running/healthy after ~1 minute
+docker compose ps                      # gateway, web, api, worker, redis: running/healthy after ~1 minute
+docker compose logs api | head         # "Database ready (created database ujglobal)" on the first start
 curl -s http://127.0.0.1:9005/health   # {"status":"ok"}
 ```
-
-The API applies database migrations on every start, so redeploying is all an update needs.
 
 ## 4. Point the domain at port 9005
 
@@ -90,7 +95,10 @@ Sign in at `https://your-domain/admin`. Owners and sales users set up two-factor
 
 | Message | Fix |
 | --- | --- |
-| `set DATABASE_URL ...` (or another `set ...`) | That setting is missing in the panel or `.env` |
-| API keeps restarting; logs say `connection refused` or `password authentication failed` | Check `DATABASE_URL`, and the PostgreSQL settings in step 1 for your setup |
+| `set ... in .env.production` | That setting is missing or empty in `.env.production` |
+| `env file .env.production not found` | Create it from `.env.production.example` (step 1) next to `compose.yml` |
+| `additional property include is not allowed` | Docker Compose is older than 2.20: update Docker |
+| API keeps restarting; logs say `Could not reach PostgreSQL` or `password authentication failed` | Check the host and password in `DATABASE_URL` (and `DATABASE_ADMIN_URL`), and the PostgreSQL settings in step 2 |
+| Logs say `isn't allowed to create it` | Set `DATABASE_ADMIN_URL`, give the user `CREATEDB`, or create the database once (step 2) |
 | `port is already allocated` on 9005 | Something else uses 9005: change `PUBLIC_PORT` and point the domain at that port instead |
 | Panel shows "bad gateway" | The panel can't reach 127.0.0.1:9005: set `PUBLIC_BIND=0.0.0.0` and firewall the port to the panel only |

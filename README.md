@@ -11,9 +11,18 @@ Website for UJ Global, a technology consultancy for web, mobile, AI and SEO work
 
 ## Run locally
 
-With Docker (the development setup; the root `compose.yml` is the live site):
+There are two settings files, one per place the site runs. Each has a committed example; the real files
+stay on your machine (git ignores them):
+
+| File | Used by | For |
+| --- | --- | --- |
+| `.env.local` | `docker compose -f compose.dev.yml up` | your computer (safe test values) |
+| `.env.production` | `docker compose up` | the live site ([docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md)) |
+
+With Docker:
 
 ```bash
+cp .env.local.example .env.local      # once; the defaults work as they are
 docker compose -f compose.dev.yml up --build
 ```
 
@@ -26,7 +35,7 @@ docker compose -f compose.dev.yml up --build
 Without Docker (needs Node 22, Python 3.12+, [uv](https://docs.astral.sh/uv/) and a local Postgres):
 
 ```bash
-cd apps/api && cp .env.example .env && uv sync && uv run alembic upgrade head && uv run uvicorn app.main:app --reload
+cd apps/api && uv sync && uv run python -m app.db_bootstrap && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 9005
 cd apps/web && npm install && npm run dev
 ```
 
@@ -106,8 +115,8 @@ Two ways to run it on your own server; GitHub only tests the code and never depl
 
 | Path | What |
 | --- | --- |
-| `compose.yml`, `infra/single-port/`, `deploy.env.example` | The live site behind one port (9005), built on the server, using your PostgreSQL |
-| `compose.dev.yml` | Local development stack (with its own Postgres, Redis and Mailpit) |
+| `compose.yml` + `.env.production` | The live site: one port (9005), built on the server, using your PostgreSQL (stack in `infra/compose.live.yml`, routing in `infra/single-port/`) |
+| `compose.dev.yml` + `.env.local` | Local development, with its own Postgres, Redis and Mailpit (stack in `infra/compose.local.yml`) |
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |
 | `infra/server/` | `setup.sh` (one-time), `new-env.sh`, `deploy.sh`, `stack.sh`, `backup.sh`, `restore.sh`, firewall |
