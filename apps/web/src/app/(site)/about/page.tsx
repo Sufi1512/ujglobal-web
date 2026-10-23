@@ -57,7 +57,7 @@ export default function AboutPage() {
         }
       />
 
-      <section aria-labelledby="mission-heading" className="mx-auto max-w-6xl px-4 py-16">
+      <section aria-labelledby="mission-heading" className="container-site py-16">
         <Reveal className="relative overflow-hidden rounded-[2rem] bg-brand p-8 text-on-brand sm:p-14">
           <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-signal/20 blur-3xl" aria-hidden />
           <Compass className="relative h-10 w-10" aria-hidden />
@@ -71,7 +71,7 @@ export default function AboutPage() {
         </Reveal>
       </section>
 
-      <section aria-labelledby="values-heading" className="mx-auto max-w-6xl px-4 py-16">
+      <section aria-labelledby="values-heading" className="container-site py-16">
         <SectionHeading id="values-heading" eyebrow="What we value" title="How we like to work" />
         <ul className="mt-12 grid gap-4 sm:grid-cols-2">
           {values.map((v, i) => (
@@ -89,7 +89,7 @@ export default function AboutPage() {
       </section>
 
       <section aria-labelledby="disciplines-heading" className="bg-mist py-20">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="container-site">
           <SectionHeading
             id="disciplines-heading"
             eyebrow="One team"
@@ -108,7 +108,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section aria-labelledby="who-heading" className="mx-auto max-w-6xl px-4 py-20">
+      <section aria-labelledby="who-heading" className="container-site py-20">
         <SectionHeading id="who-heading" eyebrow="Who we work with" title="Built for teams that want to move" />
         <ul className="mt-12 grid gap-4 lg:grid-cols-3">
           {audiences.map((a, i) => (

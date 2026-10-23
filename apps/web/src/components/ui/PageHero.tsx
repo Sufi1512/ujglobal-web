@@ -21,7 +21,7 @@ export function PageHero({
       <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden />
       <div className="glow-brand pointer-events-none absolute -right-48 -top-48 h-[640px] w-[640px]" aria-hidden />
       <div className="glow-signal pointer-events-none absolute -left-56 top-64 h-[420px] w-[420px] opacity-70" aria-hidden />
-      <div className={`relative mx-auto grid max-w-6xl gap-12 px-4 pb-16 pt-12 sm:pb-20 sm:pt-16 ${aside ? "items-center lg:grid-cols-2" : ""}`}>
+      <div className={`container-site relative grid gap-12 pb-16 pt-12 sm:pb-20 sm:pt-16 ${aside ? "items-center lg:grid-cols-2" : ""}`}>
         <div className="animate-pop">
           {breadcrumb}
           <Eyebrow>{eyebrow}</Eyebrow>

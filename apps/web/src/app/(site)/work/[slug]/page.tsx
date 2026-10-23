@@ -69,7 +69,7 @@ export default async function CaseStudyPage({ params }: Props) {
       </PageHero>
 
       {study.is_demo && (
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="container-site">
           <p className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-muted">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-link" aria-hidden />
             This is an in-house demo project built by UJ Global to show our approach. It is not client work, and the
@@ -79,7 +79,7 @@ export default async function CaseStudyPage({ params }: Props) {
       )}
 
       {study.results.length > 0 && (
-        <section aria-labelledby="results-heading" className="mx-auto max-w-6xl px-4 py-12">
+        <section aria-labelledby="results-heading" className="container-site py-12">
           <h2 id="results-heading" className="sr-only">
             Results
           </h2>
@@ -95,7 +95,7 @@ export default async function CaseStudyPage({ params }: Props) {
       )}
 
       {(study.challenge || study.solution) && (
-        <section className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-2">
+        <section className="container-site grid gap-6 py-8 lg:grid-cols-2">
           {study.challenge && (
             <Reveal className="rounded-3xl border border-line bg-surface p-8 sm:p-10">
               <span className="grid h-12 w-12 place-items-center rounded-2xl bg-signal text-on-signal">
@@ -118,7 +118,7 @@ export default async function CaseStudyPage({ params }: Props) {
       )}
 
       {study.tech_stack.length > 0 && (
-        <section aria-labelledby="stack-heading" className="mx-auto max-w-6xl px-4 py-8">
+        <section aria-labelledby="stack-heading" className="container-site py-8">
           <Reveal className="flex flex-col gap-5 rounded-3xl bg-mist p-8 sm:flex-row sm:items-center sm:p-10">
             <h2 id="stack-heading" className="shrink-0 font-display text-xl font-bold sm:w-48">
               Built with
@@ -135,7 +135,7 @@ export default async function CaseStudyPage({ params }: Props) {
       )}
 
       {(study.live_url || study.services.length > 0) && (
-        <div className="mx-auto flex max-w-6xl flex-wrap gap-3 px-4 py-8">
+        <div className="container-site flex flex-wrap gap-3 py-8">
           {study.live_url && (
             <a href={study.live_url} rel="noopener" target="_blank" className="rounded-xl border border-line bg-surface px-6 py-3.5 font-semibold hover:border-link">
               {study.is_demo ? "Try the live demo" : "Visit the live site"}
@@ -151,7 +151,7 @@ export default async function CaseStudyPage({ params }: Props) {
       )}
 
       {more.length > 0 && (
-        <section aria-labelledby="more-heading" className="mx-auto max-w-6xl px-4 py-16">
+        <section aria-labelledby="more-heading" className="container-site py-16">
           <h2 id="more-heading" className="font-display text-3xl font-bold tracking-tight">
             More projects
           </h2>

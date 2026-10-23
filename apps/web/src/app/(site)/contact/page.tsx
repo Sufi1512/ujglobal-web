@@ -21,7 +21,7 @@ export default function ContactPage() {
     <section className="relative -mt-16 overflow-hidden pt-16 sm:-mt-[72px] sm:pt-[72px]">
       <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden />
       <div className="glow-brand pointer-events-none absolute -right-48 -top-48 h-[640px] w-[640px]" aria-hidden />
-      <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-8 pt-12 sm:pt-16 lg:grid-cols-[2fr_3fr]">
+      <div className="container-site relative grid gap-12 pb-8 pt-12 sm:pt-16 lg:grid-cols-[2fr_3fr]">
         <div className="animate-pop">
           <Eyebrow>Get a quote</Eyebrow>
           <h1 className="mt-5 font-display text-4xl font-bold leading-[1.06] tracking-tight sm:text-6xl">Let&apos;s build something good.</h1>

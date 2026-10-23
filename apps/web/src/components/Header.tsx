@@ -41,7 +41,7 @@ export function Header() {
         scrolled || open ? "border-b border-line bg-background/85 shadow-[0_10px_30px_-25px_rgba(16,32,28,0.5)] backdrop-blur-md" : "border-b border-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[72px]">
+      <div className="container-site flex h-16 items-center justify-between sm:h-[72px]">
         <Link href="/" aria-label="UJ Global home">
           <Logo />
         </Link>

@@ -40,7 +40,7 @@ export default async function ServicesPage() {
         </ul>
       </PageHero>
 
-      <div className="mx-auto max-w-6xl space-y-6 px-4">
+      <div className="container-site space-y-6">
         {services.map((s, i) => {
           const look = serviceLook(s.slug);
           const flip = i % 2 === 1;

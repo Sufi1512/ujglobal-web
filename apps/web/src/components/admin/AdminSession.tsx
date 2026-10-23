@@ -103,7 +103,7 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
     content = (
       <>
         <header className="border-b border-line">
-          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
+          <div className="container-site flex h-14 items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <Link href="/admin" aria-label="Admin home">
                 <Logo />
@@ -143,7 +143,7 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-8">
+        <main className="container-site py-8">
           {user.mfa_required && !user.mfa_enabled && !pathname.startsWith("/admin/security") ? (
             // The API refuses admin data until this is done; this explains why and where to go.
             <div className="max-w-2xl rounded-xl border border-line bg-surface p-8">

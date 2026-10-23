@@ -14,7 +14,7 @@ export function CtaPanel({
   href?: string;
 }) {
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-8">
+    <section className="container-site pt-8">
       <Reveal className="relative overflow-hidden rounded-[2rem] bg-brand px-6 py-14 text-on-brand sm:px-14 sm:py-16">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-signal/15 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-on-brand/10 blur-3xl" aria-hidden />

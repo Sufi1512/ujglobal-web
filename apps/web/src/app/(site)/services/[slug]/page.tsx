@@ -91,7 +91,7 @@ export default async function ServicePage({ params }: Props) {
       </PageHero>
 
       {problem && (
-        <section aria-labelledby="problem-heading" className="mx-auto max-w-6xl px-4 py-8">
+        <section aria-labelledby="problem-heading" className="container-site py-8">
           <Reveal className="flex flex-col gap-5 rounded-3xl border border-line bg-surface p-8 sm:flex-row sm:items-center sm:p-10">
             <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-signal text-on-signal">
               <CircleAlert className="h-7 w-7" aria-hidden />
@@ -107,7 +107,7 @@ export default async function ServicePage({ params }: Props) {
       )}
 
       {service.deliverables.length > 0 && (
-        <section aria-labelledby="deliverables-heading" className="mx-auto max-w-6xl px-4 py-20">
+        <section aria-labelledby="deliverables-heading" className="container-site py-20">
           <SectionHeading id="deliverables-heading" eyebrow="What you get" title={`Everything included in ${service.title}`} />
           <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {service.deliverables.map((d, i) => (
@@ -124,7 +124,7 @@ export default async function ServicePage({ params }: Props) {
 
       {process.length > 0 && (
         <section aria-labelledby="process-heading" className="bg-mist py-20">
-          <div className="mx-auto max-w-6xl px-4">
+          <div className="container-site">
             <SectionHeading id="process-heading" eyebrow="How it works" title="From first call to launch" />
             <ol className="relative mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <span className="absolute left-0 right-0 top-6 hidden h-0.5 bg-line lg:block" aria-hidden />
@@ -143,7 +143,7 @@ export default async function ServicePage({ params }: Props) {
       )}
 
       {service.tech_stack.length > 0 && (
-        <section aria-labelledby="stack-heading" className="mx-auto max-w-6xl px-4 py-20">
+        <section aria-labelledby="stack-heading" className="container-site py-20">
           <Reveal className="grid gap-6 rounded-3xl border border-line bg-surface p-8 sm:p-10 lg:grid-cols-[1fr_2fr] lg:items-center">
             <div>
               <h2 id="stack-heading" className="font-display text-2xl font-bold">
@@ -163,7 +163,7 @@ export default async function ServicePage({ params }: Props) {
       )}
 
       {service.case_studies.length > 0 && (
-        <section id="work" aria-labelledby="work-heading" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12">
+        <section id="work" aria-labelledby="work-heading" className="container-site scroll-mt-24 py-12">
           <SectionHeading id="work-heading" eyebrow="Related work" title={`${service.title} in practice`} />
           <ul className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {service.case_studies.slice(0, 3).map((study, i) => (
@@ -176,7 +176,7 @@ export default async function ServicePage({ params }: Props) {
       )}
 
       {faqs.length > 0 && (
-        <section aria-labelledby="faq-heading" className="mx-auto grid max-w-6xl gap-10 px-4 py-20 lg:grid-cols-[2fr_3fr]">
+        <section aria-labelledby="faq-heading" className="container-site grid gap-10 py-20 lg:grid-cols-[2fr_3fr]">
           <SectionHeading id="faq-heading" eyebrow="Questions" title={`About ${service.title}`} />
           <Reveal>
             <FaqList items={faqs} />
@@ -185,7 +185,7 @@ export default async function ServicePage({ params }: Props) {
       )}
 
       {others.length > 0 && (
-        <section aria-labelledby="more-heading" className="mx-auto max-w-6xl px-4 pb-12">
+        <section aria-labelledby="more-heading" className="container-site pb-12">
           <h2 id="more-heading" className="font-display text-xl font-semibold">
             More services
           </h2>
