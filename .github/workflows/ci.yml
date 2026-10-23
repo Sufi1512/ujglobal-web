@@ -92,72 +92,28 @@ jobs:
             -e STAGING_USER=ci -e 'STAGING_PASSWORD_HASH=$2b$12$aSnslqsSDjaWZHsrD7NhneqovhDESi7GlBMOc5mIJNkVXHLh3.TBW' \
             caddy:2.8-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
-  # Every pull request builds the images, so a broken Dockerfile shows up in review. After a merge to main
-  # they're pushed, tagged with the commit, and shipped to staging.
+  # Builds the Docker images to prove the Dockerfiles still work. Nothing is pushed anywhere: the site is
+  # deployed to UJ Global's own server and hosting, not from GitHub.
   images:
     needs: [web, api, infra]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    env:
-      PUBLISH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        if: env.PUBLISH == 'true'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: API image (production and staging share it)
+      - name: API image
         uses: docker/build-push-action@v6
         with:
           context: apps/api
-          push: ${{ env.PUBLISH == 'true' }}
-          tags: |
-            ghcr.io/sufi1512/ujglobal-api:${{ github.sha }}
-            ghcr.io/sufi1512/ujglobal-api:main
+          push: false
           cache-from: type=gha,scope=api
           cache-to: type=gha,scope=api,mode=max
-      # The site's public addresses are built into the web image, so production and staging each get one.
-      - name: Web image for production
+      - name: Web image
         uses: docker/build-push-action@v6
         with:
           context: apps/web
-          push: ${{ env.PUBLISH == 'true' }}
+          push: false
           build-args: |
             NEXT_PUBLIC_API_URL=https://api.ujglobal.tech
             NEXT_PUBLIC_SITE_URL=https://ujglobal.tech
-          tags: |
-            ghcr.io/sufi1512/ujglobal-web:${{ github.sha }}
-            ghcr.io/sufi1512/ujglobal-web:main
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max
-      - name: Web image for staging
-        uses: docker/build-push-action@v6
-        with:
-          context: apps/web
-          push: ${{ env.PUBLISH == 'true' }}
-          build-args: |
-            NEXT_PUBLIC_API_URL=https://api-staging.ujglobal.tech
-            NEXT_PUBLIC_SITE_URL=https://staging.ujglobal.tech
-          tags: ghcr.io/sufi1512/ujglobal-web:${{ github.sha }}-staging
-          cache-from: type=gha,scope=web
-          cache-to: type=gha,scope=web-staging,mode=max
-
-  # Switched on by the repository variable DEPLOY_STAGING=true once the server is set up (docs/DEPLOY.md).
-  deploy-staging:
-    if: vars.DEPLOY_STAGING == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: images
-    permissions:
-      contents: read
-      packages: read
-    uses: ./.github/workflows/deploy.yml
-    with:
-      stack: staging
-      web_tag: ${{ github.sha }}-staging
-      api_tag: ${{ github.sha }}
-      url: https://staging.ujglobal.tech
-    secrets: inherit
