@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { CaseStudyCard } from "@/components/CaseStudyCard";
 import { CtaPanel } from "@/components/CtaPanel";
-import { HeroShowcase } from "@/components/home/HeroShowcase";
+import { HeroVisual } from "@/components/home/HeroVisual";
 import { ProcessSteps, type Step } from "@/components/home/ProcessSteps";
 import { ServiceExplorer } from "@/components/home/ServiceExplorer";
 import { FaqList, faqJsonLd, type FaqItem } from "@/components/ui/FaqList";
@@ -151,7 +151,7 @@ export default async function Home() {
             </dl>
           </div>
           <div className="animate-pop [animation-delay:200ms]">
-            <HeroShowcase />
+            <HeroVisual />
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { type AdminUser, type Role, logout, refreshSession, setSignedOutHandler } from "@/lib/admin/api";
 
 type SessionState = {
@@ -125,6 +126,7 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="flex items-center gap-4 text-sm">
+              <ThemeToggle className="h-9 w-9" />
               <Link
                 href="/admin/security"
                 aria-current={pathname.startsWith("/admin/security") ? "page" : undefined}

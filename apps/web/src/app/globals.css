@@ -1,12 +1,17 @@
 @import "tailwindcss";
 
+/* Theme is chosen by the visitor (light by default), not by the device: `dark:` utilities follow the
+   data-theme attribute that app/layout.tsx sets before first paint and the header toggle changes. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /*
- * UJ Global brand: "Forest" (docs/BRAND.md).
+ * UJ Global brand: "Forest" (docs/BRAND.md). Light is the default; dark applies with data-theme="dark".
  * Every text pairing below passes WCAG AA (4.5:1) in both themes. Two rules keep it that way:
  *   - `brand` is for FILLS with `on-brand` text (buttons); green TEXT, links and focus rings use `link`.
  *   - `signal` amber is a FILL only, always with `on-signal` text on it; never amber text.
  */
 :root {
+  color-scheme: light;
   --background: #f6f3ec; /* Cream */
   --surface: #ffffff; /* cards and panels */
   --foreground: #10201c; /* Pine ink */
@@ -21,21 +26,20 @@
   --mark: #10201c; /* logo tile: Pine on light, Forest on dark */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0d1613;
-    --surface: #131f1b;
-    --foreground: #eef0e9;
-    --muted: #a3b0a9;
-    --line: #24332d;
-    --mist: #111c18;
-    --brand: #3cb58f;
-    --on-brand: #0d1613;
-    --link: #6fd0af;
-    --signal: #f0b357;
-    --on-signal: #10201c;
-    --mark: #0f6b54;
-  }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0d1613;
+  --surface: #131f1b;
+  --foreground: #eef0e9;
+  --muted: #a3b0a9;
+  --line: #24332d;
+  --mist: #111c18;
+  --brand: #3cb58f;
+  --on-brand: #0d1613;
+  --link: #6fd0af;
+  --signal: #f0b357;
+  --on-signal: #10201c;
+  --mark: #0f6b54;
 }
 
 @theme inline {
