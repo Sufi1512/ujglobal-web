@@ -55,10 +55,9 @@ export function GlobeScene({ className = "" }: { className?: string }) {
         <circle cx="200" cy="200" r={R + 26} fill="var(--brand)" opacity="0.06" />
         <circle cx="200" cy="200" r={R} fill="var(--surface)" stroke="var(--line)" strokeWidth="2" />
         <g clipPath="url(#glb-clip)" fill="none" stroke="var(--line)" strokeWidth="1.5">
-          {[0.38, 0.76].map((k) => (
-            <ellipse key={k} cx="200" cy="200" rx={R * k} ry={R} />
+          {[0, 1, 2, 3].map((k) => (
+            <ellipse key={k} cx="200" cy="200" rx={R} ry={R} className="svg-meridian" style={{ animationDelay: `${-k * 5}s` }} />
           ))}
-          <line x1="200" y1="40" x2="200" y2="360" />
           {[-115, -60, 0, 60, 115].map((d) => {
             const w = Math.sqrt(R * R - d * d);
             return <ellipse key={d} cx="200" cy={200 + d} rx={w} ry={w * 0.1} />;
@@ -77,8 +76,20 @@ export function GlobeScene({ className = "" }: { className?: string }) {
             <path key={i} d={arc(p, PINS[i + 1])} className="draw-line" style={{ animationDelay: `${0.3 + i * 0.35}s` }} />
           ))}
         </g>
+        {PINS.slice(0, -1).map((p, i) => (
+          <circle
+            key={i}
+            r="4.5"
+            fill="var(--signal)"
+            stroke="var(--surface)"
+            strokeWidth="1.5"
+            className="svg-travel"
+            style={{ offsetPath: `path("${arc(p, PINS[i + 1])}")`, offsetRotate: "0deg", animationDelay: `${1.8 + i * 0.8}s` }}
+          />
+        ))}
         {PINS.map((p, i) => (
           <g key={i}>
+            <circle cx={p.x} cy={p.y} r="6" fill="var(--brand)" className="svg-ping" style={{ animationDelay: `${i * 0.5}s` }} />
             <circle cx={p.x} cy={p.y} r="11" fill="var(--brand)" opacity="0.16" />
             <circle cx={p.x} cy={p.y} r="5.5" fill="var(--brand)" stroke="var(--surface)" strokeWidth="2.5" />
           </g>
@@ -141,7 +152,9 @@ export function TeamScene({ className = "" }: { className?: string }) {
       ))}
       <Note x={90} y={58} fill="var(--signal)" lines="var(--on-signal)" rot={-2} />
       <Note x={90} y={102} fill="var(--signal)" lines="var(--on-signal)" rot={1.5} />
-      <Note x={90} y={146} fill="var(--mist)" rot={-1} />
+      <g className="svg-note-move">
+        <Note x={90} y={146} fill="var(--mist)" rot={-1} />
+      </g>
       <Note x={205} y={58} fill="var(--mist)" rot={1} />
       <Note x={205} y={102} fill="color-mix(in srgb, var(--brand) 18%, var(--surface))" rot={-1.5} />
       <Note x={320} y={58} fill="var(--brand)" lines="var(--on-brand)" rot={-1} />
@@ -155,8 +168,10 @@ export function TeamScene({ className = "" }: { className?: string }) {
       <rect x="44" y="290" width="11" height="52" rx="5" fill="var(--foreground)" opacity="0.85" />
       <rect x="62" y="290" width="11" height="52" rx="5" fill="var(--foreground)" opacity="0.85" />
       <path d="M38 298l4-96q2-22 18-22h0q16 0 18 22l4 96z" fill="var(--brand)" />
-      <path d="M72 198l34-46" stroke="var(--brand)" strokeWidth="12" strokeLinecap="round" />
-      <circle cx="108" cy="148" r="6.5" fill={SKIN[0]} />
+      <g className="svg-point" style={{ transformOrigin: "72px 198px" }}>
+        <path d="M72 198l34-46" stroke="var(--brand)" strokeWidth="12" strokeLinecap="round" />
+        <circle cx="108" cy="148" r="6.5" fill={SKIN[0]} />
+      </g>
       <Head cx={59} cy={160} skin={SKIN[0]} hair="bun" />
 
       {/* Table, laptop, mug and plant */}
@@ -164,21 +179,27 @@ export function TeamScene({ className = "" }: { className?: string }) {
       <rect x="430" y="282" width="12" height="62" rx="4" fill="var(--line)" />
 
       {/* Seated person, left */}
-      <Head cx={226} cy={214} skin={SKIN[1]} />
+      <g className="svg-nod">
+        <Head cx={226} cy={214} skin={SKIN[1]} />
+      </g>
       <path d="M196 284l3-36q2-14 18-16h18q16 2 18 16l3 36z" fill="var(--signal)" />
       {/* Seated person, right */}
-      <Head cx={388} cy={214} skin={SKIN[2]} hair="long" />
+      <g className="svg-nod" style={{ animationDelay: "-1.8s" }}>
+        <Head cx={388} cy={214} skin={SKIN[2]} hair="long" />
+      </g>
       <path d="M358 284l3-36q2-14 18-16h18q16 2 18 16l3 36z" fill="var(--foreground)" opacity="0.88" />
 
       <path d="M282 236h70l-6 40h-58z" fill="var(--surface)" stroke="var(--line)" strokeWidth="2" />
-      <circle cx="317" cy="256" r="4" fill="var(--signal)" />
+      <circle cx="317" cy="256" r="4" fill="var(--signal)" className="svg-glow" />
       <rect x="132" y="272" width="324" height="14" rx="7" fill="var(--line)" />
       <rect x="272" y="268" width="90" height="6" rx="3" fill="var(--muted)" opacity="0.6" />
       <rect x="180" y="254" width="15" height="18" rx="4" fill="var(--brand)" />
       <path d="M195 258q7 0 7 5t-7 5" fill="none" stroke="var(--brand)" strokeWidth="2.5" />
       <rect x="150" y="252" width="20" height="20" rx="4" fill="var(--mist)" stroke="var(--line)" strokeWidth="1.5" />
-      <ellipse cx="154" cy="240" rx="6" ry="13" fill="var(--link)" transform="rotate(-20 154 240)" />
-      <ellipse cx="166" cy="238" rx="6" ry="14" fill="var(--link)" opacity="0.75" transform="rotate(18 166 238)" />
+      <g className="svg-sway">
+        <ellipse cx="154" cy="240" rx="6" ry="13" fill="var(--link)" transform="rotate(-20 154 240)" />
+        <ellipse cx="166" cy="238" rx="6" ry="14" fill="var(--link)" opacity="0.75" transform="rotate(18 166 238)" />
+      </g>
 
       {/* Speech bubble */}
       <rect x="408" y="148" width="62" height="32" rx="12" fill="var(--surface)" stroke="var(--line)" strokeWidth="2" />
@@ -218,6 +239,12 @@ export function GrowthScene({ className = "" }: { className?: string }) {
         ))}
         <path d={`${line}L404 215L40 215z`} fill="var(--brand)" opacity="0.14" />
         <path d={line} fill="none" stroke="var(--brand)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="draw-line" style={{ strokeDasharray: 600, strokeDashoffset: 600 }} />
+        <g className="svg-sweep">
+          <line x1="40" x2="40" y1="70" y2="215" stroke="var(--brand)" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6" />
+          <rect x="16" y="56" width="48" height="16" rx="8" fill="var(--foreground)" />
+          <rect x="26" y="62" width="28" height="4" rx="2" fill="var(--background)" />
+        </g>
+        <circle cx="404" cy="70" r="7" fill="var(--signal)" className="svg-ping" />
         {pts.map((p, i) => (
           <circle key={i} cx={p[0]} cy={p[1]} r={i === pts.length - 1 ? 6 : 3.5} fill={i === pts.length - 1 ? "var(--signal)" : "var(--surface)"} stroke="var(--brand)" strokeWidth="2.5" />
         ))}
@@ -229,7 +256,7 @@ export function GrowthScene({ className = "" }: { className?: string }) {
           </g>
         ))}
       </svg>
-      <div className="animate-float absolute left-[12%] top-[24%] flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 shadow-lg">
+      <div className="animate-float absolute bottom-[30%] right-[8%] flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 shadow-lg">
         <span className="grid h-7 w-7 place-items-center rounded-lg bg-signal text-on-signal">
           <ArrowUpRight className="h-4 w-4" />
         </span>
@@ -248,15 +275,16 @@ export function ServiceOrbit({ slugs, className = "" }: { slugs: string[]; class
   const items = slugs.slice(0, 8);
   return (
     <div className={`relative mx-auto aspect-square w-full max-w-[520px] ${className}`} aria-hidden>
-      <div className="absolute inset-[6%] rounded-full border border-dashed border-line" />
+      <div className="animate-orbit absolute inset-[6%] rounded-full border border-dashed border-line" />
       <div className="absolute inset-[26%] rounded-full border border-line bg-surface/60" />
       <div className="glow-brand absolute inset-[20%] opacity-70" />
       <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 text-center">
-        <span className="rounded-3xl bg-surface p-3 shadow-xl ring-1 ring-line">
+        <span className="animate-pulse-ring rounded-3xl bg-surface p-3 shadow-xl ring-1 ring-line">
           <BrandMark size={64} />
         </span>
         <span className="font-display text-sm font-bold">One team</span>
       </div>
+      <div className="animate-orbit absolute inset-0">
       {items.map((slug, i) => {
         const { icon: Icon, short } = serviceLook(slug);
         const a = (i / items.length) * Math.PI * 2 - Math.PI / 2;
@@ -268,6 +296,7 @@ export function ServiceOrbit({ slugs, className = "" }: { slugs: string[]; class
             className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
+            <div className="animate-orbit-reverse flex flex-col items-center gap-1.5">
             <span
               className={`animate-float grid h-14 w-14 place-items-center rounded-2xl shadow-lg ring-1 ring-line ${i % 3 === 0 ? "bg-brand text-on-brand" : i % 3 === 1 ? "bg-surface text-link" : "bg-signal text-on-signal"}`}
               style={{ animationDelay: `${i * 0.5}s` }}
@@ -275,9 +304,11 @@ export function ServiceOrbit({ slugs, className = "" }: { slugs: string[]; class
               <Icon className="h-6 w-6" />
             </span>
             <span className="rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-semibold shadow-sm ring-1 ring-line">{short}</span>
+            </div>
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
@@ -288,10 +319,14 @@ export function WorkCollage({ className = "" }: { className?: string }) {
   return (
     <div className={`relative mx-auto w-full max-w-[600px] pb-10 ${className}`} aria-hidden>
       <div className="w-[78%] -rotate-3">
-        <ServiceVisual kind="seo" />
+        <div className="animate-float-slow">
+          <ServiceVisual kind="seo" />
+        </div>
       </div>
       <div className="relative -mt-[38%] ml-auto w-[78%] rotate-2">
-        <ServiceVisual kind="ai" />
+        <div className="animate-float">
+          <ServiceVisual kind="ai" />
+        </div>
       </div>
       <div className="animate-float absolute bottom-0 left-[6%] flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 shadow-lg">
         <span className="rounded-full border border-foreground/60 px-2 py-0.5 text-[10px] font-semibold">Demo project</span>
