@@ -86,6 +86,8 @@ services:
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
     # Lets containers reach a PostgreSQL running on this server as host.docker.internal.
     extra_hosts: ["host.docker.internal:host-gateway"]
+    # `db` is your PostgreSQL container's own network when DB_NETWORK names it (see below).
+    networks: [default, db]
     expose: ["9005"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9005/health', timeout=4).status == 200 else 1)"]
@@ -128,6 +130,7 @@ services:
       LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
     extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [default, db]
     command: ["arq", "app.workers.main.WorkerSettings"]
     depends_on:
       api: { condition: service_healthy }
@@ -140,6 +143,17 @@ services:
     volumes: [redisdata:/data]
     # No published port: only the API and worker use it.
     logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
+
+networks:
+  default:
+  # PostgreSQL in a Docker container whose port isn't published (the panel shows just "5432/tcp"):
+  # set DB_NETWORK to that container's network and use the container's name as the host in
+  # DATABASE_URL, e.g. postgresql+asyncpg://ujglobal:PASSWORD@my-postgres:5432/ujglobal.
+  # The API and worker join that network; your PostgreSQL container isn't changed. Left unset, this is
+  # an empty network of the site's own and nothing changes. Doesn't work with Docker's built-in
+  # "bridge" network: then publish the port as 127.0.0.1:5432:5432 and use host.docker.internal.
+  db:
+    name: ${DB_NETWORK:-ujglobal_db}
 
 volumes:
   redisdata:

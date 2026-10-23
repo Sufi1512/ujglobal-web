@@ -36,6 +36,7 @@ nano .env
 | `SITE_URL` | your domain with https, e.g. `https://ujglobal.tech` |
 | `DATABASE_URL` | **required, no default**: the site's user and database in your PostgreSQL, e.g. `postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal` (`postgres://...` works too). The API refuses to start without it |
 | `DATABASE_ADMIN_URL` | optional, see step 2 |
+| `DB_NETWORK` | optional: only for a PostgreSQL container without a published port, see step 2 |
 | `JWT_SECRET`, `IP_HASH_SALT`, `REVALIDATE_SECRET`, `MFA_ENCRYPTION_KEY` | the four lines from `gen-secrets.sh`. Keep `MFA_ENCRYPTION_KEY` the same forever |
 | `SMTP_*`, `EMAIL_FROM`, `LEAD_ALERT_RECIPIENTS` | alerts go to `hello@ujglobal.tech` by default. Replace `SMTP_HOST` and `SMTP_PASSWORD` for the service that hosts that mailbox (Google Workspace, Zoho, Hostinger, Microsoft 365 or Resend: the example lists each one's settings), or set `LEAD_ALERT_RECIPIENTS=[]` to switch alerts off for now. The API won't start with the example's `REPLACE_...` values while alerts are on |
 | `PUBLIC_PORT` | `9005` (default), the port your panel points the domain at |
@@ -57,7 +58,7 @@ How the site reaches your PostgreSQL:
 | Your PostgreSQL runs... | Host in the URLs | Also needed |
 | --- | --- | --- |
 | in Docker, publishing port 5432 on this server | `host.docker.internal` | nothing |
-| in Docker **without** a published port (the panel shows just `5432/tcp`) | `host.docker.internal` | Publish it on this server only: recreate the PostgreSQL container with port `127.0.0.1:5432:5432` (its data volume stays). Otherwise the site's containers can't reach it |
+| in Docker **without** a published port (the panel shows just `5432/tcp`) | the container's **name** | Set `DB_NETWORK` to that container's network: the API and worker join it, and the PostgreSQL container isn't touched. Find the name and network with `docker inspect -f '{{.Name}} {{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' $(docker ps -q --filter expose=5432)`. If the network is Docker's built-in `bridge`, this doesn't work: publish the port as `127.0.0.1:5432:5432` instead and use `host.docker.internal` |
 | directly on this server (installed with apt) | `host.docker.internal` | In `postgresql.conf` set `listen_addresses = '*'` (or add `172.17.0.1`); in `pg_hba.conf` add `host all all 172.16.0.0/12 scram-sha-256`; restart PostgreSQL. Keep 5432 closed to the internet in your firewall |
 | on another server or a managed service | its hostname | allow this server's IP; add `?ssl=require` to the URL |
 
@@ -102,7 +103,7 @@ Sign in at `https://your-domain/admin`. Owners and sales users set up two-factor
 | API logs say `DATABASE_URL is required` and `received none of the site's settings` | The settings didn't reach the container. Check they're saved in this app's environment variables in the panel, then redeploy. A container you started by hand from the `ujglobal-api` image (not through the deploy) never gets them: remove it |
 | Deploy fails with `container ...-api-1 is unhealthy` | Open that container's logs: its last lines say why the API stopped (one of the rows here) |
 | `additional property ... is not allowed` (e.g. on `env_file`) | Docker Compose is older than 2.24: update Docker |
-| API keeps restarting; logs say `Could not reach PostgreSQL` or `password authentication failed` | Check the host and password in `DATABASE_URL` (and `DATABASE_ADMIN_URL`), and the PostgreSQL settings in step 2 |
+| API keeps restarting; logs say `Could not reach PostgreSQL` or `password authentication failed` | Check the host and password in `DATABASE_URL` (and `DATABASE_ADMIN_URL`), and the PostgreSQL settings in step 2. With `DB_NETWORK`, check it's spelled exactly like the container's network (a wrong name quietly makes a new, empty network) |
 | Logs say `isn't allowed to create it` | Set `DATABASE_ADMIN_URL`, give the user `CREATEDB`, or create the database once (step 2) |
 | `port is already allocated` on 9005 | Something else uses 9005: change `PUBLIC_PORT` and point the domain at that port instead |
 | Panel shows "bad gateway" | The panel can't reach 127.0.0.1:9005: set `PUBLIC_BIND=0.0.0.0` and firewall the port to the panel only |
