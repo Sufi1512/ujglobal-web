@@ -9,7 +9,12 @@ DEV_MFA_KEY = "dev-only-insecure-mfa-key-change-me"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Settings come from environment variables first, then from files (later files win): a local .env,
+    # and in the live images (infra/single-port/api.Dockerfile) the stack's defaults and the .env your
+    # hosting panel puts next to compose.yml, for panels that don't pass environment variables on.
+    model_config = SettingsConfigDict(
+        env_file=(".env", "/app/settings/defaults.env", "/app/settings/.env"), extra="ignore"
+    )
 
     environment: str = "local"
     # Required, with no default: the PostgreSQL the site uses, including the database name. That database
@@ -20,6 +25,9 @@ class Settings(BaseSettings):
     # site's database user and database when they don't exist yet. Without it the API creates just the
     # database, which needs the DATABASE_URL user to be allowed to (CREATEDB).
     database_admin_url: str | None = None
+    # The public address of the site, e.g. https://ujglobal.tech. When set, it's also used for
+    # CORS_ORIGINS and ADMIN_BASE_URL unless those are set themselves.
+    site_url: str | None = None
     cors_origins: list[str] = ["http://localhost:9006"]
     ip_hash_salt: str = "change-me"
 
@@ -76,6 +84,17 @@ class Settings(BaseSettings):
     # Empty URL turns this off; pages then still refresh on their own within 5 minutes.
     web_revalidate_url: str | None = "http://localhost:9006/api/revalidate"
     revalidate_secret: str = "dev-only-revalidate-secret"
+
+    @model_validator(mode="after")
+    def use_site_url(self) -> "Settings":
+        if self.site_url:
+            site = self.site_url.strip().rstrip("/")
+            fields = self.model_fields_set
+            if "cors_origins" not in fields:
+                self.cors_origins = [site]
+            if "admin_base_url" not in fields:
+                self.admin_base_url = site
+        return self
 
     @model_validator(mode="after")
     def require_database_url(self) -> "Settings":
