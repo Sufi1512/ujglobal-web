@@ -1,0 +1,94 @@
+# One UJ Global app stack: website, API, worker, Postgres and Redis.
+# The same file runs production and staging side by side on one server, each as its own Compose project
+# with its own .env, database and Redis. Run by infra/server/deploy.sh:
+#   docker compose -p ujglobal-production -f compose.app.yml --env-file /srv/ujglobal/production/.env up -d
+#
+# Only `web` and `api` join the shared `ujglobal-edge` network, under STACK-prefixed names
+# (production-web, staging-api, ...) that the edge Caddy routes to. Never use the bare names `web` or
+# `api` across that network: both stacks have them. Inside a stack, the worker reaches the site as `web`.
+
+name: ujglobal-${STACK:?set STACK=production or STACK=staging in the .env}
+
+x-app-env: &app-env
+  env_file: ${ENV_FILE:?}
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "5" }
+
+services:
+  web:
+    <<: *app-env
+    image: ghcr.io/sufi1512/ujglobal-web:${WEB_TAG:?}
+    expose: ["3000"]
+    networks:
+      default: {}
+      edge:
+        aliases: ["${STACK}-web"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      api: { condition: service_healthy }
+
+  api:
+    <<: *app-env
+    image: ghcr.io/sufi1512/ujglobal-api:${API_TAG:?}
+    expose: ["8000"]
+    networks:
+      default: {}
+      edge:
+        aliases: ["${STACK}-api"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  # Background jobs: lead alert emails, website refreshes after edits, nightly retention clean-up.
+  worker:
+    <<: *app-env
+    image: ghcr.io/sufi1512/ujglobal-api:${API_TAG:?}
+    command: ["arq", "app.workers.main.WorkerSettings"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:-ujglobal}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    # No published ports: Postgres is only reachable inside this stack's network.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 10
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+
+networks:
+  edge:
+    name: ujglobal-edge
+    external: true
+
+volumes:
+  pgdata:
+  redisdata:

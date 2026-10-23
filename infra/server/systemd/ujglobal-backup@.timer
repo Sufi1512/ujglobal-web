@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily backup of the UJ Global %i database
+
+[Timer]
+# 02:47 UTC daily, off the hour; a run missed while the server was off happens at next boot.
+OnCalendar=*-*-* 02:47:00 UTC
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

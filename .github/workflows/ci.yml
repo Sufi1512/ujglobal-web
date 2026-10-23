@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+# Least privilege: jobs get read-only access unless they ask for more (only `images` publishes).
+permissions:
+  contents: read
+
 jobs:
   web:
     runs-on: ubuntu-latest
@@ -65,3 +69,95 @@ jobs:
           uv run alembic upgrade head
           uv run alembic check
       - run: uv run pytest -q
+
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell scripts pass shellcheck
+        run: shellcheck --severity=warning infra/server/*.sh
+      - name: Compose files are valid
+        run: |
+          docker network create ujglobal-edge
+          printf 'STACK=staging\nPOSTGRES_USER=u\nPOSTGRES_PASSWORD=p\n' > /tmp/app.env
+          ENV_FILE=/tmp/app.env WEB_TAG=x API_TAG=x docker compose -f infra/compose.app.yml --env-file /tmp/app.env config --quiet
+          sudo mkdir -p /srv/ujglobal/edge && sudo touch /srv/ujglobal/edge/.env
+          docker compose -f infra/edge/compose.yml config --quiet
+      - name: Caddy config is valid
+        run: |
+          mkdir -p /tmp/certs
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=ujglobal.tech" \
+            -keyout /tmp/certs/origin.key -out /tmp/certs/origin.pem 2>/dev/null
+          docker run --rm -v "$PWD/infra/edge:/etc/caddy:ro" -v /tmp/certs:/certs:ro \
+            -e STAGING_USER=ci -e 'STAGING_PASSWORD_HASH=$2b$12$aSnslqsSDjaWZHsrD7NhneqovhDESi7GlBMOc5mIJNkVXHLh3.TBW' \
+            caddy:2.8-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+  # Every pull request builds the images, so a broken Dockerfile shows up in review. After a merge to main
+  # they're pushed, tagged with the commit, and shipped to staging.
+  images:
+    needs: [web, api, infra]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      PUBLISH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: env.PUBLISH == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: API image (production and staging share it)
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/api
+          push: ${{ env.PUBLISH == 'true' }}
+          tags: |
+            ghcr.io/sufi1512/ujglobal-api:${{ github.sha }}
+            ghcr.io/sufi1512/ujglobal-api:main
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+      # The site's public addresses are built into the web image, so production and staging each get one.
+      - name: Web image for production
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          push: ${{ env.PUBLISH == 'true' }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api.ujglobal.tech
+            NEXT_PUBLIC_SITE_URL=https://ujglobal.tech
+          tags: |
+            ghcr.io/sufi1512/ujglobal-web:${{ github.sha }}
+            ghcr.io/sufi1512/ujglobal-web:main
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+      - name: Web image for staging
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          push: ${{ env.PUBLISH == 'true' }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api-staging.ujglobal.tech
+            NEXT_PUBLIC_SITE_URL=https://staging.ujglobal.tech
+          tags: ghcr.io/sufi1512/ujglobal-web:${{ github.sha }}-staging
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web-staging,mode=max
+
+  # Switched on by the repository variable DEPLOY_STAGING=true once the server is set up (docs/DEPLOY.md).
+  deploy-staging:
+    if: vars.DEPLOY_STAGING == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: images
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/deploy.yml
+    with:
+      stack: staging
+      web_tag: ${{ github.sha }}-staging
+      api_tag: ${{ github.sha }}
+      url: https://staging.ujglobal.tech
+    secrets: inherit

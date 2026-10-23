@@ -1,0 +1,48 @@
+# Production deploys are deliberate: open Actions > "Deploy production" > Run workflow.
+# Leave the version empty to ship the latest commit on main (the one already running on staging),
+# or give a commit SHA to ship, or roll back to, that exact version.
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Full 40-character commit SHA to deploy (empty = latest on main)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - name: Pick the version
+        id: sha
+        run: |
+          sha="${{ inputs.version || github.sha }}"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Use the full 40-character commit SHA (images are tagged with it): $sha" >&2; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: Check its images were built
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          for image in ujglobal-web ujglobal-api; do
+            docker manifest inspect "ghcr.io/sufi1512/$image:${{ steps.sha.outputs.sha }}" > /dev/null \
+              || { echo "No $image image for ${{ steps.sha.outputs.sha }}: was it merged to main and built?" >&2; exit 1; }
+          done
+
+  deploy:
+    needs: resolve
+    uses: ./.github/workflows/deploy.yml
+    with:
+      stack: production
+      web_tag: ${{ needs.resolve.outputs.sha }}
+      api_tag: ${{ needs.resolve.outputs.sha }}
+      url: https://ujglobal.tech
+    secrets: inherit

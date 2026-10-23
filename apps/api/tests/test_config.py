@@ -23,6 +23,7 @@ def test_production_settings_load_when_everything_is_set():
         ({"jwt_secret": "short"}, "JWT_SECRET"),
         ({"ip_hash_salt": "change-me"}, "IP_HASH_SALT"),
         ({"smtp_host": "localhost"}, "SMTP_HOST"),
+        ({"smtp_host": ""}, "SMTP_HOST"),
         ({"revalidate_secret": "dev-only-revalidate-secret"}, "REVALIDATE_SECRET"),
     ],
 )

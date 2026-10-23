@@ -1,0 +1,15 @@
+[Unit]
+Description=Allow web traffic to UJ Global only through Cloudflare
+# Docker recreates its chains when it starts, so apply after it (and again whenever it restarts).
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/ujglobal-firewall-cloudflare
+ExecStop=/usr/local/sbin/ujglobal-firewall-cloudflare --off
+
+[Install]
+WantedBy=multi-user.target docker.service
