@@ -14,13 +14,14 @@ It's safe to run again and again: when everything exists it only checks and exit
 
 import asyncio
 import logging
+import os
 import sys
 
 import asyncpg
 from pydantic import ValidationError
 from sqlalchemy.engine import URL, make_url
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 
 log = logging.getLogger("app.db_bootstrap")
 
@@ -106,6 +107,20 @@ async def ensure_database(database_url: str, admin_url: str | None = None) -> li
     return done
 
 
+def received_settings_report(environ: dict[str, str] | None = None) -> str:
+    """Which of the site's settings reached this container, by name only (never values), for deploy logs."""
+    env = os.environ if environ is None else environ
+    known = {name.upper() for name in Settings.model_fields}
+    present = sorted(k for k in env if k in known and env[k] != "")
+    if not present:
+        return (
+            "This container received none of the site's settings. The hosting panel isn't passing the "
+            "compose `environment` (or a .env file) to it: check the panel's environment variables "
+            "for this app."
+        )
+    return "Settings this container received (names only): " + ", ".join(present)
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     try:
@@ -114,6 +129,7 @@ def main() -> None:
         # e.g. no DATABASE_URL: print the plain reason, not a stack trace.
         for error in exc.errors():
             log.error("%s", str(error["msg"]).removeprefix("Value error, "))
+        log.error("%s", received_settings_report())
         sys.exit(1)
     try:
         done = asyncio.run(ensure_database(settings.database_url, settings.database_admin_url))

@@ -14,32 +14,6 @@
 
 name: ujglobal
 
-x-api-env: &api-env
-  ENVIRONMENT: production
-  DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
-  DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
-  REDIS_URL: redis://redis:6379/0
-  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
-  IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
-  REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
-  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY in .env or your panel environment variables}
-  CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
-  ADMIN_BASE_URL: ${SITE_URL}
-  COOKIE_SECURE: "true"
-  WEB_REVALIDATE_URL: http://web:9006/api/revalidate
-  SMTP_HOST: ${SMTP_HOST:-}
-  SMTP_PORT: ${SMTP_PORT:-587}
-  SMTP_USERNAME: ${SMTP_USERNAME:-}
-  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-  SMTP_SECURITY: ${SMTP_SECURITY:-starttls}
-  EMAIL_FROM: ${EMAIL_FROM:-UJ Global <no-reply@ujglobal.tech>}
-  LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
-  TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
-
-x-logging: &logging
-  driver: json-file
-  options: { max-size: "10m", max-file: "5" }
-
 services:
   gateway:
     image: caddy:2.8-alpine
@@ -54,7 +28,7 @@ services:
     depends_on:
       web: { condition: service_healthy }
       api: { condition: service_healthy }
-    logging: *logging
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
 
   web:
     build:
@@ -79,7 +53,7 @@ services:
       start_period: 20s
     depends_on:
       api: { condition: service_healthy }
-    logging: *logging
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
 
   api:
     build: ./apps/api
@@ -87,7 +61,29 @@ services:
     restart: unless-stopped
     # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
     env_file: [{ path: .env, required: false }]
-    environment: *api-env
+    # Written out in full (no YAML anchors): some hosting panels drop anchored blocks when they rewrite
+    # the file, and the containers then start with no settings at all.
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
+      DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
+      IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY in .env or your panel environment variables}
+      CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
+      ADMIN_BASE_URL: ${SITE_URL}
+      COOKIE_SECURE: "true"
+      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SECURITY: ${SMTP_SECURITY:-starttls}
+      EMAIL_FROM: ${EMAIL_FROM:-UJ Global <no-reply@ujglobal.tech>}
+      LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
     # Lets containers reach a PostgreSQL running on this server as host.docker.internal.
     extra_hosts: ["host.docker.internal:host-gateway"]
     expose: ["9005"]
@@ -99,7 +95,7 @@ services:
       start_period: 40s
     depends_on:
       redis: { condition: service_started }
-    logging: *logging
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
 
   # Background jobs: lead alert emails, website refreshes after edits, nightly retention clean-up.
   worker:
@@ -108,12 +104,34 @@ services:
     restart: unless-stopped
     # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
     env_file: [{ path: .env, required: false }]
-    environment: *api-env
+    # Written out in full (no YAML anchors): some hosting panels drop anchored blocks when they rewrite
+    # the file, and the containers then start with no settings at all.
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
+      DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
+      IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY in .env or your panel environment variables}
+      CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
+      ADMIN_BASE_URL: ${SITE_URL}
+      COOKIE_SECURE: "true"
+      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SECURITY: ${SMTP_SECURITY:-starttls}
+      EMAIL_FROM: ${EMAIL_FROM:-UJ Global <no-reply@ujglobal.tech>}
+      LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
     extra_hosts: ["host.docker.internal:host-gateway"]
     command: ["arq", "app.workers.main.WorkerSettings"]
     depends_on:
       api: { condition: service_healthy }
-    logging: *logging
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
 
   redis:
     image: redis:7-alpine
@@ -121,7 +139,7 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes: [redisdata:/data]
     # No published port: only the API and worker use it.
-    logging: *logging
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
 
 volumes:
   redisdata:

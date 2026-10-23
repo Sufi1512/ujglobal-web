@@ -73,3 +73,18 @@ async def test_clear_message_when_the_user_cannot_create_databases():
     finally:
         await conn.execute(f'DROP ROLE IF EXISTS "{user}"')
         await conn.close()
+
+
+def test_settings_report_lists_names_only():
+    from app.db_bootstrap import received_settings_report
+
+    env = {"DATABASE_URL": "postgresql://u:secret@h/db", "JWT_SECRET": "x", "PATH": "/bin"}
+    report = received_settings_report(env)
+    assert "DATABASE_URL" in report and "JWT_SECRET" in report
+    assert "secret" not in report.replace("JWT_SECRET", "") and "PATH" not in report
+
+
+def test_settings_report_when_nothing_arrives():
+    from app.db_bootstrap import received_settings_report
+
+    assert "none of the site's settings" in received_settings_report({"PATH": "/bin", "DATABASE_URL": ""})
