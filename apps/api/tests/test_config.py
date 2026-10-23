@@ -69,3 +69,12 @@ def test_plain_postgres_urls_get_the_async_driver():
     )
     assert settings.database_url == "postgresql+asyncpg://u:p@h:5432/site"
     assert settings.database_admin_url == "postgresql+asyncpg://admin:p@h:5432/postgres"
+
+
+def test_example_email_placeholders_are_refused():
+    with pytest.raises(ValidationError, match="SMTP_HOST and SMTP_PASSWORD"):
+        Settings(
+            **{**PRODUCTION_READY, "smtp_host": "REPLACE_smtp_server", "smtp_password": "REPLACE_password"}
+        )
+    # With alerts off the placeholders don't matter.
+    Settings(**{**PRODUCTION_READY, "smtp_host": "REPLACE_smtp_server", "lead_alert_recipients": []})
