@@ -1,14 +1,128 @@
-# UJ Global, LIVE SITE. Settings: .env.production (copy .env.production.example and fill it in).
+# UJ Global, LIVE SITE. Settings come from your hosting panel's environment variables, or from a `.env`
+# file next to this one (copy .env.production.example to .env and fill it in).
 #
 #   docker compose up -d --build
 #
-# The whole site answers on one port (9005) and uses your existing PostgreSQL; the stack itself is in
-# infra/compose.live.yml. Needs Docker Compose 2.20 or newer. Guide: docs/DEPLOY-SINGLE-PORT.md.
+# Only the `gateway` publishes a port: PUBLIC_PORT (default 9005), on 127.0.0.1 unless PUBLIC_BIND says
+# otherwise. It sends /v1/* and /health to the API and everything else to the website, on one domain.
+# No Postgres container: the API and worker use your existing PostgreSQL (DATABASE_URL), and the API
+# creates the database there on first start if it's missing. Redis runs inside the stack, unpublished.
+# One self-contained file on purpose: hosting panels that rewrite compose files often mishandle `include`.
+# Needs Docker Compose 2.24 or newer. Guide: docs/DEPLOY-SINGLE-PORT.md.
 #
 # On your own computer use the development setup instead: docker compose -f compose.dev.yml up --build
 
 name: ujglobal
 
-include:
-  - path: infra/compose.live.yml
-    env_file: .env.production
+x-api-env: &api-env
+  ENVIRONMENT: production
+  DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
+  DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
+  REDIS_URL: redis://redis:6379/0
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
+  IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
+  REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
+  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?set MFA_ENCRYPTION_KEY in .env or your panel environment variables}
+  CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
+  ADMIN_BASE_URL: ${SITE_URL}
+  COOKIE_SECURE: "true"
+  WEB_REVALIDATE_URL: http://web:9006/api/revalidate
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_USERNAME: ${SMTP_USERNAME:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  SMTP_SECURITY: ${SMTP_SECURITY:-starttls}
+  EMAIL_FROM: ${EMAIL_FROM:-UJ Global <no-reply@ujglobal.tech>}
+  LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
+  TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "5" }
+
+services:
+  gateway:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    # 127.0.0.1 by default: only your hosting panel on this server can reach it, never the internet
+    # directly (Docker-published ports skip the firewall). Set PUBLIC_BIND=0.0.0.0 only if the panel
+    # connects over the network, and then allow the port from the panel's address alone.
+    ports: ["${PUBLIC_BIND:-127.0.0.1}:${PUBLIC_PORT:-9005}:9005"]
+    volumes:
+      - ./infra/single-port/Caddyfile:/etc/caddy/Caddyfile:ro
+      - gatewaydata:/data
+    depends_on:
+      web: { condition: service_healthy }
+      api: { condition: service_healthy }
+    logging: *logging
+
+  web:
+    build:
+      context: ./apps/web
+      args:
+        # Same domain for site and API: the browser calls /v1/... on the site's own address.
+        NEXT_PUBLIC_API_URL: ${SITE_URL}
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+    image: ujglobal-web:latest
+    restart: unless-stopped
+    # Only what the website needs; none of the API's secrets.
+    environment:
+      API_INTERNAL_URL: http://api:9005
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+    expose: ["9006"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9006/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      api: { condition: service_healthy }
+    logging: *logging
+
+  api:
+    build: ./apps/api
+    image: ujglobal-api:latest
+    restart: unless-stopped
+    # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
+    env_file: [{ path: .env, required: false }]
+    environment: *api-env
+    # Lets containers reach a PostgreSQL running on this server as host.docker.internal.
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    expose: ["9005"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9005/health', timeout=4).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    depends_on:
+      redis: { condition: service_started }
+    logging: *logging
+
+  # Background jobs: lead alert emails, website refreshes after edits, nightly retention clean-up.
+  worker:
+    build: ./apps/api
+    image: ujglobal-api:latest
+    restart: unless-stopped
+    # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
+    env_file: [{ path: .env, required: false }]
+    environment: *api-env
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    command: ["arq", "app.workers.main.WorkerSettings"]
+    depends_on:
+      api: { condition: service_healthy }
+    logging: *logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    # No published port: only the API and worker use it.
+    logging: *logging
+
+volumes:
+  redisdata:
+  gatewaydata:
