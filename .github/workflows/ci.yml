@@ -83,8 +83,10 @@ jobs:
           ENV_FILE=/tmp/app.env WEB_ENV_FILE=/tmp/app.env WEB_TAG=x API_TAG=x docker compose -f infra/compose.app.yml --env-file /tmp/app.env config --quiet
           sudo mkdir -p /srv/ujglobal/edge && sudo touch /srv/ujglobal/edge/.env
           docker compose -f infra/edge/compose.yml config --quiet
-          printf 'ADMIN_BASE_URL=https://ujglobal.tech\n' >> /tmp/app.env
-          ENV_FILE=/tmp/app.env WEB_ENV_FILE=/tmp/app.env docker compose -f infra/compose.single.yml --env-file /tmp/app.env config --quiet
+          grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' deploy.env.example > /tmp/live.env
+          bash infra/server/gen-secrets.sh >> /tmp/live.env
+          docker compose -f compose.yml --env-file /tmp/live.env config --quiet
+          docker compose -f compose.dev.yml config --quiet
       - name: Caddy config is valid
         run: |
           mkdir -p /tmp/certs

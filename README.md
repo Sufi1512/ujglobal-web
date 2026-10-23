@@ -11,15 +11,17 @@ Website for UJ Global, a technology consultancy for web, mobile, AI and SEO work
 
 ## Run locally
 
-With Docker:
+With Docker (the development setup; the root `compose.yml` is the live site):
 
 ```bash
-docker compose up --build
+docker compose -f compose.dev.yml up --build
 ```
 
 - Site: http://localhost:9006
 - API docs: http://localhost:9005/docs
 - Mailpit (test inbox, where new-lead alert emails land): http://localhost:8025
+- Postgres and Redis for local tools: `localhost:5433` and `localhost:6380` (so they don't clash with copies
+  you may already run)
 
 Without Docker (needs Node 22, Python 3.12+, [uv](https://docs.astral.sh/uv/) and a local Postgres):
 
@@ -49,7 +51,7 @@ Case studies default to **demo projects** and are labelled "Demo project" everyw
 
 ## Background worker and email
 
-Slow work runs in the `worker` container (ARQ on Redis), started by `docker compose up`. Right now it emails the
+Slow work runs in the `worker` container (ARQ on Redis), started with the rest of the stack. Right now it emails the
 team about every new lead; the lead is always saved first, failed emails retry with back-off, and a sweep every
 minute catches anything missed. Locally the emails go to Mailpit. In production set the `SMTP_*`,
 `EMAIL_FROM` and `LEAD_ALERT_RECIPIENTS` settings in the server's `.env` (see docs/DEPLOY.md; Resend or
@@ -96,15 +98,16 @@ Then sign in at http://localhost:9006/admin. Roles are `owner`, `editor` and `sa
 
 Two ways to run it on your own server; GitHub only tests the code and never deploys:
 
-- **One port** (simplest, for hosting panels that map a domain to a single port): the whole site answers
-  on port 9005 and a built-in reverse proxy routes `/v1/*` to the API and everything else to the website.
-  See [docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md).
+- **One port** (`compose.yml`, simplest, for hosting panels that map a domain to a single port): the whole
+  site answers on port 9005, a built-in reverse proxy routes `/v1/*` to the API and everything else to the
+  website, and it uses your existing PostgreSQL. See [docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md).
 - **Full setup**: production and staging side by side behind Cloudflare, with a shared Caddy on ports
   80/443, backups and a firewall. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 | Path | What |
 | --- | --- |
-| `infra/compose.single.yml`, `infra/single-port/` | The whole site behind one port (9005), built on the server |
+| `compose.yml`, `infra/single-port/`, `deploy.env.example` | The live site behind one port (9005), built on the server, using your PostgreSQL |
+| `compose.dev.yml` | Local development stack (with its own Postgres, Redis and Mailpit) |
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |
 | `infra/server/` | `setup.sh` (one-time), `new-env.sh`, `deploy.sh`, `stack.sh`, `backup.sh`, `restore.sh`, firewall |
