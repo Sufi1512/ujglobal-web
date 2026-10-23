@@ -116,7 +116,7 @@ Two ways to run it on your own server; GitHub only tests the code and never depl
 
 | Path | What |
 | --- | --- |
-| `compose.yml` + `.env` | The live site: one port (9005), built on the server, using your PostgreSQL (stack in `infra/compose.live.yml`, routing in `infra/single-port/`) |
+| `compose.yml` + `.env` | The live site: one port (9005), built on the server, using your PostgreSQL (routing in `infra/single-port/`) |
 | `compose.dev.yml` + `.env.local` | Local development, with its own Postgres, Redis and Mailpit (stack in `infra/compose.local.yml`) |
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |
