@@ -94,12 +94,17 @@ Then sign in at http://localhost:9006/admin. Roles are `owner`, `editor` and `sa
 
 ## Deploying
 
-One server runs production (ujglobal.tech) and staging (staging.ujglobal.tech) behind Cloudflare. Every
-merge to `main` builds the images and deploys staging; production deploys when you run **Actions → Deploy
-production**. Setup, day-to-day tasks, backups and restores: [docs/DEPLOY.md](docs/DEPLOY.md).
+Two ways to run it on your own server; GitHub only tests the code and never deploys:
+
+- **One port** (simplest, for hosting panels that map a domain to a single port): the whole site answers
+  on port 9005 and a built-in reverse proxy routes `/v1/*` to the API and everything else to the website.
+  See [docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md).
+- **Full setup**: production and staging side by side behind Cloudflare, with a shared Caddy on ports
+  80/443, backups and a firewall. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 | Path | What |
 | --- | --- |
+| `infra/compose.single.yml`, `infra/single-port/` | The whole site behind one port (9005), built on the server |
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |
 | `infra/server/` | `setup.sh` (one-time), `new-env.sh`, `deploy.sh`, `stack.sh`, `backup.sh`, `restore.sh`, firewall |

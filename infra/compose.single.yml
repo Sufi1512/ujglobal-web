@@ -1,0 +1,114 @@
+# The whole site behind ONE port, for hosting panels where a domain can point at a single port.
+#
+#   docker compose -f infra/compose.single.yml --env-file /srv/ujglobal/production/.env up -d --build
+#
+# Only the `gateway` publishes a port (PUBLIC_PORT, default 9005). It sends /v1/* and /health to the API
+# and everything else to the website (infra/single-port/Caddyfile). The images are built on the server
+# from this repo, so nothing comes from a registry. Settings come from the files new-env.sh writes:
+# .env (API, worker, database) and web.env (website), see docs/DEPLOY-SINGLE-PORT.md.
+
+name: ujglobal-${STACK:-production}
+
+x-app-env: &app-env
+  env_file: ${ENV_FILE:?set ENV_FILE to the stack's .env}
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "5" }
+
+services:
+  gateway:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    # 127.0.0.1 by default: only the hosting platform on this server can reach it, never the internet
+    # directly. Set PUBLIC_BIND=0.0.0.0 only if the platform connects over the network, and then allow
+    # the port from the platform's address alone.
+    ports: ["${PUBLIC_BIND:-127.0.0.1}:${PUBLIC_PORT:-9005}:9005"]
+    volumes:
+      - ./single-port/Caddyfile:/etc/caddy/Caddyfile:ro
+      - gatewaydata:/data
+    depends_on:
+      web: { condition: service_healthy }
+      api: { condition: service_healthy }
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  web:
+    <<: *app-env
+    # Only API_INTERNAL_URL and REVALIDATE_SECRET; none of the API's secrets.
+    env_file: ${WEB_ENV_FILE:?set WEB_ENV_FILE to the stack's web.env}
+    build:
+      context: ../apps/web
+      args:
+        # Same domain for site and API: the browser calls /v1/... on the site's own address.
+        NEXT_PUBLIC_API_URL: ${ADMIN_BASE_URL:?}
+        NEXT_PUBLIC_SITE_URL: ${ADMIN_BASE_URL:?}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+    image: ujglobal-web:${STACK:-production}
+    expose: ["9006"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9006/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      api: { condition: service_healthy }
+
+  api:
+    <<: *app-env
+    build: ../apps/api
+    image: ujglobal-api:${STACK:-production}
+    # Brings the database schema up to date before serving, so a restart after an update is enough.
+    command: ["sh", "-c", "alembic upgrade head && exec gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:9005"]
+    expose: ["9005"]
+    networks:
+      default:
+        # new-env.sh writes API_INTERNAL_URL=http://<stack>-api:9005; this name makes it resolve here too.
+        aliases: ["${STACK:-production}-api"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9005/health', timeout=4).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  worker:
+    <<: *app-env
+    # Same image as the API (built once, then reused from cache).
+    build: ../apps/api
+    image: ujglobal-api:${STACK:-production}
+    command: ["arq", "app.workers.main.WorkerSettings"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:-ujglobal}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 10
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+
+volumes:
+  pgdata:
+  redisdata:
+  gatewaydata:
