@@ -48,7 +48,14 @@ find "$DIR" -name "$STACK-*.dump" -type f -mtime +"$KEEP_DAYS" -delete
 
 if [[ -n "$REMOTE" ]]; then
 	if command -v rclone >/dev/null; then
-		rclone copy "$file" "$REMOTE/$STACK/" && echo "Copied off-server to $REMOTE/$STACK/"
+		# Backups hold every lead's personal data: only ever send them to an encrypted (crypt) remote.
+		remote_name="${REMOTE%%:*}"
+		if [[ "$(rclone config show "$remote_name" 2>/dev/null | sed -n 's/^type *= *//p')" != crypt ]]; then
+			echo "BACKUP_REMOTE ($remote_name) is not an rclone crypt remote; not uploading unencrypted backups." >&2
+			echo "Set one up with 'rclone config' (type crypt, wrapping your bucket). See docs/DEPLOY.md." >&2
+			exit 1
+		fi
+		rclone copy "$file" "$REMOTE/$STACK/" && echo "Copied off-server (encrypted) to $REMOTE/$STACK/"
 	else
 		echo "BACKUP_REMOTE is set but rclone isn't installed; the backup stays on this server only." >&2
 		exit 1

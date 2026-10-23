@@ -17,6 +17,10 @@ dependencies = [
     "arq>=0.26",
     "aiosmtplib>=3.0",
     "httpx>=0.28",
+    "pyotp>=2.9",
+    "segno>=1.6",
+    "cryptography>=43",
+    "redis>=5",
 ]
 
 [dependency-groups]

@@ -5,6 +5,7 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEV_JWT_SECRET = "dev-only-insecure-jwt-secret-change-me"
+DEV_MFA_KEY = "dev-only-insecure-mfa-key-change-me"
 
 
 class Settings(BaseSettings):
@@ -21,6 +22,29 @@ class Settings(BaseSettings):
     refresh_token_days: int = 14
     # Secure cookies need HTTPS; only plain-HTTP local development turns this off.
     cookie_secure: bool = True
+
+    # Two-factor sign-in. Secrets are encrypted at rest with a key derived from MFA_ENCRYPTION_KEY
+    # (changing it disables everyone's authenticator, so keep it with the other secrets). Roles listed in
+    # MFA_REQUIRED_ROLES can't use the admin until they have set up an authenticator app.
+    mfa_encryption_key: str = DEV_MFA_KEY
+    mfa_required_roles: list[str] = ["owner", "sales"]
+
+    # The visitor's IP comes from this header, which the edge Caddy overwrites with the address it
+    # verified (Cloudflare's CF-Connecting-IP only when the request really came from Cloudflare). The API
+    # is never reachable except through Caddy, so a visitor can't forge it. Empty = use the TCP peer.
+    client_ip_header: str = "x-real-ip"
+
+    # Abuse limits (0 turns a limit off). Windows are in seconds.
+    login_max_failures_per_account: int = 10
+    login_max_failures_per_ip: int = 20
+    login_window_seconds: int = 900
+    contact_max_per_ip: int = 5
+    contact_window_seconds: int = 3600
+    alert_emails_max_per_hour: int = 30
+
+    # Cloudflare Turnstile ("are you human" check) on the contact form. Empty turns the check off; set it
+    # together with NEXT_PUBLIC_TURNSTILE_SITE_KEY on the website.
+    turnstile_secret: str = ""
 
     # Background jobs (ARQ) and email. Locally SMTP goes to Mailpit; in production point it at the
     # SMTP endpoint of Resend or Postmark, so switching provider is a config change only.
@@ -51,6 +75,8 @@ class Settings(BaseSettings):
         if self.environment not in {"local", "test"}:
             if self.jwt_secret == DEV_JWT_SECRET or len(self.jwt_secret) < 32:
                 raise ValueError("JWT_SECRET must be set to a random value of at least 32 characters")
+            if self.mfa_encryption_key == DEV_MFA_KEY or len(self.mfa_encryption_key) < 32:
+                raise ValueError("MFA_ENCRYPTION_KEY must be set to a random value of at least 32 characters")
             if self.ip_hash_salt == "change-me":
                 raise ValueError("IP_HASH_SALT must be changed outside local development")
             if self.web_revalidate_url and self.revalidate_secret == "dev-only-revalidate-secret":

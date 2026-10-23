@@ -3,6 +3,7 @@
     python -m app.cli create-user --email you@ujglobal.tech --name "Your Name" --role owner
     python -m app.cli set-password --email you@ujglobal.tech
     python -m app.cli deactivate --email someone@ujglobal.tech
+    python -m app.cli reset-mfa --email someone@ujglobal.tech    (lost phone: they set it up again)
 
 Passwords are read from a hidden prompt, or from the ADMIN_PASSWORD environment variable for scripted setups.
 """
@@ -77,6 +78,20 @@ async def deactivate(email: str) -> None:
     print(f"Deactivated {email}")
 
 
+async def reset_mfa(email: str) -> None:
+    async with SessionLocal() as session:
+        user = await session.scalar(select(User).where(User.email == email))
+        if user is None:
+            sys.exit(f"No user with email {email}")
+        user.totp_secret_enc = None
+        user.totp_enabled_at = None
+        user.totp_last_step = None
+        user.backup_code_hashes = []
+        await _revoke_sessions(session, user)
+        await session.commit()
+    print(f"Two-factor sign-in reset for {email}; they must set it up again at their next sign-in")
+
+
 async def _revoke_sessions(session: AsyncSession, user: User) -> None:
     await session.execute(
         update(AuthSession)
@@ -94,7 +109,7 @@ def main(argv: list[str] | None = None) -> None:
     create.add_argument("--name", required=True)
     create.add_argument("--role", choices=[r.value for r in UserRole], default=UserRole.editor.value)
 
-    for name in ("set-password", "deactivate"):
+    for name in ("set-password", "deactivate", "reset-mfa"):
         sub = commands.add_parser(name)
         sub.add_argument("--email", required=True)
 
@@ -107,6 +122,8 @@ def main(argv: list[str] | None = None) -> None:
                 await create_user(email, args.name.strip(), UserRole(args.role))
             elif args.command == "set-password":
                 await set_password(email)
+            elif args.command == "reset-mfa":
+                await reset_mfa(email)
             else:
                 await deactivate(email)
         finally:

@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 SEND_LEAD_ALERT = "send_lead_alert"
 REVALIDATE_WEB = "revalidate_web"
+SEND_SECURITY_ALERT = "send_security_alert"
 
 _pool: ArqRedis | None = None
 
@@ -61,6 +62,18 @@ async def queue_revalidation(*tags: str) -> bool:
         log.exception(
             "Could not queue a website refresh for %s; pages refresh on their own within minutes", tags
         )
+        return False
+
+
+async def queue_security_alert(kind: str, details: dict[str, str]) -> bool:
+    """Asks the worker to email the owners about a security event (e.g. an account locked by repeated
+    failed sign-ins). Never raises."""
+    try:
+        pool = await _get_pool()
+        await pool.enqueue_job(SEND_SECURITY_ALERT, kind, details)
+        return True
+    except Exception:
+        log.exception("Could not queue a security alert (%s)", kind)
         return False
 
 

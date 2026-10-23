@@ -8,6 +8,7 @@ import pytest  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
+from app.core import ratelimit  # noqa: E402
 from app.core.db import SessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Base  # noqa: E402
@@ -23,7 +24,17 @@ async def schema() -> AsyncIterator[None]:
 
 
 @pytest.fixture(autouse=True)
+def no_required_mfa(monkeypatch):
+    """Most tests sign in with a password only; tests/test_security.py turns the requirement back on."""
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "mfa_required_roles", [])
+
+
+@pytest.fixture(autouse=True)
 async def clean_tables() -> AsyncIterator[None]:
+    # Each test gets fresh, in-memory rate limits (tests/test_ratelimit.py covers the Redis backend).
+    ratelimit.use_backend(ratelimit.MemoryBackend())
     yield
     tables = ", ".join(t.name for t in Base.metadata.sorted_tables)
     async with engine.begin() as conn:

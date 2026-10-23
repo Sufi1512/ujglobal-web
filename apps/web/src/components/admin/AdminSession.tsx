@@ -125,6 +125,13 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="flex items-center gap-4 text-sm">
+              <Link
+                href="/admin/security"
+                aria-current={pathname.startsWith("/admin/security") ? "page" : undefined}
+                className={pathname.startsWith("/admin/security") ? "font-medium" : "text-muted hover:text-foreground"}
+              >
+                Security
+              </Link>
               <span className="hidden text-muted sm:inline">
                 {user.name} · {user.role}
               </span>
@@ -135,7 +142,19 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8">
-          {canUse(user.role, pathname) || user.role === "owner" ? (
+          {user.mfa_required && !user.mfa_enabled && !pathname.startsWith("/admin/security") ? (
+            // The API refuses admin data until this is done; this explains why and where to go.
+            <div className="max-w-2xl rounded-xl border border-line bg-surface p-8">
+              <h1 className="font-display text-2xl font-semibold">Set up two-factor sign-in first</h1>
+              <p className="mt-2 text-sm text-muted">
+                Your role can see client data, so your account needs a second step at sign-in: a code from an
+                authenticator app on your phone. It takes about a minute.
+              </p>
+              <Link href="/admin/security" className="mt-4 inline-block rounded-full bg-brand px-5 py-2 text-sm font-medium text-on-brand">
+                Set it up now
+              </Link>
+            </div>
+          ) : canUse(user.role, pathname) || user.role === "owner" ? (
             children
           ) : (
             <div className="rounded-xl border border-line bg-surface p-8">

@@ -13,7 +13,7 @@ VALID = {
 
 
 async def test_contact_stores_lead(client, session_factory):
-    res = await client.post("/v1/leads/contact", json=VALID, headers={"cf-connecting-ip": "203.0.113.7"})
+    res = await client.post("/v1/leads/contact", json=VALID, headers={"x-real-ip": "203.0.113.7"})
     assert res.status_code == 201
     body = res.json()
     assert body["ok"] is True and body["id"]

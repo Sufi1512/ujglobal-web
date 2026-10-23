@@ -19,6 +19,8 @@ class ContactIn(BaseModel):
     consent: bool = Field(default=False, validate_default=True)
     # Honeypot field: real visitors never see it, bots fill it in.
     website: str | None = None
+    # Cloudflare Turnstile token from the form, checked when TURNSTILE_SECRET is set.
+    turnstile_token: str | None = Field(default=None, max_length=2048)
 
     @field_validator("consent")
     @classmethod

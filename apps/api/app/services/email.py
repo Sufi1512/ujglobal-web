@@ -104,3 +104,33 @@ async def send_email(msg: EmailMessage, settings: Settings | None = None) -> Non
         start_tls=True if settings.smtp_security == "starttls" else False,
         timeout=20,
     )
+
+
+SECURITY_ALERT_TEXT = {
+    "signin_locked": (
+        "Sign-in locked after repeated failures",
+        "UJ Global admin sign-in was locked for {minutes} minutes "
+        "after {failures} failed {what} attempts.\n\n"
+        "Account tried: {account}\nVisitor (hashed IP): {ip_hash}\n\n"
+        "If this was you, wait and try again. If not, someone may be guessing passwords: check that every "
+        "admin account uses a strong, unique password and has two-factor sign-in turned on.",
+    ),
+}
+
+
+def build_security_alert(
+    kind: str, details: dict[str, str], recipients: list[str], settings: Settings
+) -> EmailMessage:
+    """Plain-text email to the owners about a security event. Values are flattened to single lines."""
+    subject, body = SECURITY_ALERT_TEXT.get(kind, ("Security event", "Security event: {what}"))
+    safe = {k: _one_line(v, 200) or "(not recorded)" for k, v in details.items()}
+    msg = EmailMessage()
+    msg["Subject"] = f"[UJ Global security] {subject}"
+    msg["From"] = settings.email_from
+    msg["To"] = ", ".join(recipients)
+    msg["Message-ID"] = make_msgid(domain="ujglobal.tech")
+    msg["Auto-Submitted"] = "auto-generated"
+    msg.set_content(
+        body.format_map({"what": "", "account": "", "ip_hash": "", "failures": "", "minutes": "", **safe})
+    )
+    return msg

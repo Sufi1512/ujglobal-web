@@ -23,7 +23,9 @@
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		-Server
 	}
 	log {
@@ -32,11 +34,29 @@
 	}
 }
 
+# The apps learn the visitor's address only from X-Real-IP, set here to the address Caddy verified
+# (Cloudflare's header is believed only from Cloudflare's ranges, see trusted_proxies). Whatever a visitor
+# sends as X-Real-IP or CF-Connecting-IP themselves is overwritten.
+(to_app) {
+	header_up X-Real-IP {client_ip}
+}
+
+# The API only ever receives small JSON bodies; anything bigger is refused before it reaches the app,
+# and API responses may never be framed or run scripts.
+(api_limits) {
+	request_body {
+		max_size 64KB
+	}
+	header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+}
+
 # --- Production ---------------------------------------------------------------------------------------
 
 ujglobal.tech {
 	import common
-	reverse_proxy production-web:3000
+	reverse_proxy production-web:3000 {
+		import to_app
+	}
 }
 
 www.ujglobal.tech {
@@ -46,7 +66,10 @@ www.ujglobal.tech {
 
 api.ujglobal.tech {
 	import common
-	reverse_proxy production-api:8000
+	import api_limits
+	reverse_proxy production-api:8000 {
+		import to_app
+	}
 }
 
 # --- Staging: password-protected, never indexed ------------------------------------------------------
@@ -58,15 +81,21 @@ staging.ujglobal.tech {
 	basic_auth {
 		{$STAGING_USER} {$STAGING_PASSWORD_HASH}
 	}
-	reverse_proxy staging-web:3000
+	reverse_proxy staging-web:3000 {
+		import to_app
+	}
 }
 
-# The staging API stays open so the staging site can call it from the browser (a password prompt would
-# break those requests). It only ever holds test data, and it is never indexed.
+# The staging API can't sit behind the password prompt (the staging site calls it from the browser), so
+# it's limited the same way as production and should also be put behind Cloudflare Access or an IP
+# allow-list (docs/DEPLOY.md, step 8). It only ever holds test data, and it is never indexed.
 api-staging.ujglobal.tech {
 	import common
+	import api_limits
 	header X-Robots-Tag "noindex, nofollow"
-	reverse_proxy staging-api:8000
+	reverse_proxy staging-api:8000 {
+		import to_app
+	}
 }
 
 # Anything else (an IP address, an unknown name): close the connection.

@@ -2,7 +2,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, IdTimestampMixin
@@ -21,7 +22,27 @@ class User(IdTimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(120))
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), default=UserRole.editor)
-    totp_secret: Mapped[str | None] = mapped_column(String(64))
+    # Two-factor sign-in. The authenticator secret is stored encrypted (app/core/mfa.py); it is set when
+    # setup starts and only counts once `totp_enabled_at` is set by a first correct code.
+    totp_secret_enc: Mapped[str | None] = mapped_column(Text)
+    totp_enabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # The last 30-second step a code was accepted for, so a code can't be used twice.
+    totp_last_step: Mapped[int | None] = mapped_column(Integer)
+    # One-time recovery codes, stored only as SHA-256 hashes; each is removed when used.
+    backup_code_hashes: Mapped[list[str]] = mapped_column(
+        ARRAY(String(64)), default=list, server_default="{}"
+    )
+
+    @property
+    def mfa_enabled(self) -> bool:
+        return self.totp_enabled_at is not None
+
+    @property
+    def mfa_required(self) -> bool:
+        from app.core.config import get_settings
+
+        return self.role.value in get_settings().mfa_required_roles
+
     is_active: Mapped[bool] = mapped_column(default=True)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

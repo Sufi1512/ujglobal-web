@@ -12,9 +12,10 @@ ROOT="${UJ_ROOT:-/srv/ujglobal}"
 case "$STACK" in production | staging) ;; *) echo "Unknown stack: $STACK" >&2; exit 2 ;; esac
 
 ENV_FILE="$ROOT/$STACK/.env"
+WEB_ENV_FILE="$ROOT/$STACK/web.env"
 STATE="$ROOT/$STACK/deployed.env"
 [[ -f "$STATE" ]] || { echo "$STACK hasn't been deployed yet." >&2; exit 1; }
 WEB_TAG="$(sed -n 's/^WEB_TAG=//p' "$STATE")"
 API_TAG="$(sed -n 's/^API_TAG=//p' "$STATE")"
-export ENV_FILE WEB_TAG API_TAG
+export ENV_FILE WEB_ENV_FILE WEB_TAG API_TAG
 exec docker compose -f "$ROOT/infra/compose.app.yml" --env-file "$ENV_FILE" "$@"

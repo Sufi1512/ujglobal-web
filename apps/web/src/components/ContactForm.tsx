@@ -2,10 +2,60 @@
 
 import { ArrowRight, Check, CircleCheckBig } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { submitContact } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { ContactError, TURNSTILE_SITE_KEY, submitContact } from "@/lib/api";
 
 type Status = "idle" | "sending" | "sent" | "error";
+
+type TurnstileApi = {
+  render: (el: HTMLElement, options: Record<string, unknown>) => string;
+  reset: (id?: string) => void;
+  remove: (id?: string) => void;
+};
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
+
+const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+/** Cloudflare's "are you human" widget. Renders nothing when no site key is configured. */
+function useTurnstile(onToken: (token: string) => void) {
+  const box = useRef<HTMLDivElement>(null);
+  const widget = useRef<string | null>(null);
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY || !box.current) return;
+    const el = box.current;
+    const render = () => {
+      if (window.turnstile && !widget.current) {
+        widget.current = window.turnstile.render(el, {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: onToken,
+          "expired-callback": () => onToken(""),
+          appearance: "interaction-only",
+        });
+      }
+    };
+    if (window.turnstile) render();
+    else {
+      let script = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SCRIPT}"]`);
+      if (!script) {
+        script = document.createElement("script");
+        script.src = TURNSTILE_SCRIPT;
+        script.async = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener("load", render);
+    }
+    return () => {
+      if (widget.current) window.turnstile?.remove(widget.current);
+      widget.current = null;
+    };
+  }, [onToken]);
+  const reset = () => widget.current && window.turnstile?.reset(widget.current);
+  return { box, reset };
+}
 
 const INTERESTS = [
   { slug: "web-development", label: "Website or web app" },
@@ -23,6 +73,9 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [interests, setInterests] = useState<string[]>([]);
   const [timeline, setTimeline] = useState("");
+  const [errorText, setErrorText] = useState("");
+  const [token, setToken] = useState("");
+  const { box: turnstileBox, reset: resetTurnstile } = useTurnstile(setToken);
 
   // Links like /contact?service=mobile-apps pre-select that interest.
   useEffect(() => {
@@ -50,10 +103,18 @@ export function ContactForm() {
         message: context.length > 0 ? `${context.join("\n")}\n\n${message}` : message,
         consent: data.get("consent") === "on",
         website: String(data.get("website") ?? ""),
+        turnstile_token: token || undefined,
       });
       setStatus("sent");
-    } catch {
+    } catch (err) {
+      // Too many messages (429) or a failed security check (400) come with a message for the visitor.
+      setErrorText(
+        err instanceof ContactError && (err.status === 429 || err.status === 400)
+          ? err.message
+          : "Something went wrong. Please try again or email us directly.",
+      );
       setStatus("error");
+      resetTurnstile();
     }
   }
 
@@ -153,6 +214,7 @@ export function ContactForm() {
           .
         </span>
       </label>
+      {TURNSTILE_SITE_KEY && <div ref={turnstileBox} />}
       {/* Honeypot: hidden from people, filled by bots */}
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
       <div className="flex flex-wrap items-center gap-4">
@@ -168,7 +230,7 @@ export function ContactForm() {
       </div>
       {status === "error" && (
         <p role="alert" className="text-sm text-red-700 dark:text-red-400">
-          Something went wrong. Please try again or email us directly.
+          {errorText}
         </p>
       )}
     </form>

@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { site } from "@/lib/site";
@@ -16,7 +17,7 @@ const organizationJsonLd = {
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+      <JsonLd data={organizationJsonLd} />
       <Header />
       <main>{children}</main>
       <Footer />

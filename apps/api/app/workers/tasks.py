@@ -10,11 +10,11 @@ from arq import Retry
 from sqlalchemy import delete, or_, select
 from sqlalchemy.engine import CursorResult
 
-from app.core import audit
+from app.core import audit, ratelimit
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.models import AuthSession, Lead, LeadNote, LeadStatus
-from app.services.email import build_lead_alert, send_email
+from app.models import AuthSession, Lead, LeadNote, LeadStatus, User, UserRole
+from app.services.email import build_lead_alert, build_security_alert, send_email
 from app.workers.queue import SEND_LEAD_ALERT, lead_alert_job_id
 
 log = logging.getLogger(__name__)
@@ -43,6 +43,14 @@ async def send_lead_alert(ctx: dict[str, Any], lead_id: str) -> str:
         if lead.notified_at is not None:
             return "already sent"
 
+        # A flood of fake enquiries must not become a flood of emails (or burn the provider's quota).
+        # Past the hourly cap the lead stays in the inbox, just without its own email.
+        cap = await ratelimit.hit("alert-emails", "all", settings.alert_emails_max_per_hour, 3600)
+        if not cap.allowed:
+            lead.notified_at = datetime.now(UTC)
+            log.warning("Hourly alert cap reached; lead %s is in the inbox without an email", lead_id)
+            return "capped"
+
         try:
             await send_email(build_lead_alert(lead, settings), settings)
         except Exception as exc:
@@ -52,6 +60,24 @@ async def send_lead_alert(ctx: dict[str, Any], lead_id: str) -> str:
 
         lead.notified_at = datetime.now(UTC)
     log.info("Sent new-lead alert for %s", lead_id)
+    return "sent"
+
+
+async def send_security_alert(ctx: dict[str, Any], kind: str, details: dict[str, str]) -> str:
+    """Emails every active owner about a security event (falls back to LEAD_ALERT_RECIPIENTS)."""
+    settings = get_settings()
+    async with SessionLocal() as session:
+        owners = list(
+            await session.scalars(
+                select(User.email).where(User.role == UserRole.owner, User.is_active.is_(True))
+            )
+        )
+    recipients = owners or settings.lead_alert_recipients
+    if not recipients:
+        log.warning("No owner to email about security event %s", kind)
+        return "no recipients"
+    await send_email(build_security_alert(kind, details, recipients, settings), settings)
+    log.info("Sent security alert %s to %s owner(s)", kind, len(recipients))
     return "sent"
 
 
