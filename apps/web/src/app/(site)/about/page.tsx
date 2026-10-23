@@ -5,6 +5,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/Section";
 import { ServiceVisual } from "@/components/visuals/ServiceVisual";
+import { TeamScene } from "@/components/illustrations/Scenes";
 
 export const metadata: Metadata = {
   title: "About",
@@ -73,7 +74,12 @@ export default function AboutPage() {
 
       <section aria-labelledby="values-heading" className="container-site py-16">
         <SectionHeading id="values-heading" eyebrow="What we value" title="How we like to work" />
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2">
+        <div className="mt-12 grid items-center gap-10 lg:grid-cols-[5fr_6fr]">
+        <Reveal className="relative rounded-[2rem] bg-mist p-6 sm:p-10">
+          <div className="bg-grid pointer-events-none absolute inset-0 rounded-[2rem] opacity-50" aria-hidden />
+          <TeamScene className="relative" />
+        </Reveal>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           {values.map((v, i) => (
             <Reveal as="li" key={v.title} delay={(i % 2) * 100} className="group flex gap-5 rounded-3xl border border-line bg-surface p-7 transition hover:-translate-y-1 hover:border-link">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-mist text-link transition group-hover:bg-brand group-hover:text-on-brand">
@@ -86,6 +92,7 @@ export default function AboutPage() {
             </Reveal>
           ))}
         </ul>
+        </div>
       </section>
 
       <section aria-labelledby="disciplines-heading" className="bg-mist py-20">
