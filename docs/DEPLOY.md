@@ -77,11 +77,14 @@ In the Cloudflare dashboard for ujglobal.tech:
    ```
 
 4. **SSL/TLS → Edge Certificates:** turn on **Always Use HTTPS**.
-5. **Security → Settings:** set **Challenge Passage** to **30 minutes**. The cookie policy says so.
+5. **Security → Settings:** set **Challenge Passage** to **30 minutes** (the cookie policy says so), and turn on **Bot Fight Mode**.
+6. **Security → WAF → Managed rules:** turn on the Cloudflare managed ruleset.
+7. **Security → WAF → Rate limiting rules → Create rule:** when *URI Path* is in `/v1/auth/login`, `/v1/auth/mfa/verify`, `/v1/leads/contact` and the hostname is `api.ujglobal.tech`, block for 10 minutes after **10 requests per minute** from one IP. (The API has its own limits too; this stops floods before they reach the server.)
+8. **Turnstile → Add widget** (recommended): domain `ujglobal.tech`, mode *Managed*. Put the **site key** in the web image's `NEXT_PUBLIC_TURNSTILE_SITE_KEY` build setting and the **secret key** in `TURNSTILE_SECRET` in `production/.env`. The contact form then checks visitors are human, usually invisibly.
 
 ## 4. Settings files
 
-Generate the three `.env` files on the server. Every secret is random:
+Generate the settings files on the server. Every secret is random. Each stack gets two files: `.env` for the API, worker and database (all the secrets), and `web.env` for the website, which holds only the two values it needs, so a bug in the website can't expose the database password or the other keys:
 
 ```bash
 sudo -u deploy bash /tmp/ujglobal-web/infra/server/new-env.sh production
@@ -129,17 +132,21 @@ In the repository's **Settings**:
 
 2. **Production:** **Actions → Deploy production → Run workflow** (leave the version empty), then approve it. When it's green, create the production owner the same way, with `ujglobal-production-api-1`. Sign in at https://ujglobal.tech/admin.
 
+   Owners and sales users must turn on **two-factor sign-in** before they can use the admin: on first sign-in the admin opens **Security**, where you scan a QR code with an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password) and save 10 one-time backup codes in your password manager. Lost the phone and the codes? Reset it from the server: `docker exec -it ujglobal-production-api-1 python -m app.cli reset-mfa --email someone@ujglobal.tech`.
+
 3. **Check alerts:** send yourself a message through https://ujglobal.tech/contact. The alert should arrive within a minute.
 
-## 8. Lock the origin to Cloudflare
+## 8. Lock the origin to Cloudflare (before going public)
 
-Once the site works through Cloudflare, stop anyone reaching the server's IP directly:
+Do this as soon as the site loads through Cloudflare, before announcing it. Until then, attackers can reach the server's IP directly and skip Cloudflare's protection:
 
 ```bash
 sudo systemctl enable --now ujglobal-firewall.service ujglobal-firewall.timer
 ```
 
-From your own computer, `curl -m 10 -k https://<server IP>` should now time out, while https://ujglobal.tech still loads. To undo: `sudo systemctl disable --now ujglobal-firewall.service`. Docker's published ports bypass `ufw`, so this uses Docker's own `DOCKER-USER` chain; the IP ranges refresh weekly from cloudflare.com.
+From your own computer, `curl -m 10 -k https://<server IP>` should now time out, while https://ujglobal.tech still loads.
+
+Then protect the staging API, which can't sit behind the staging password: in Cloudflare **Zero Trust → Access → Applications**, add `api-staging.ujglobal.tech` and `staging.ujglobal.tech` with a policy that allows only your team's emails (free for up to 50 users). To undo: `sudo systemctl disable --now ujglobal-firewall.service`. Docker's published ports bypass `ufw`, so this uses Docker's own `DOCKER-USER` chain; the IP ranges refresh weekly from cloudflare.com.
 
 ## 9. Search engines
 
@@ -157,7 +164,9 @@ From your own computer, `curl -m 10 -k https://<server IP>` should now time out,
 | Status | `/srv/ujglobal/infra/server/stack.sh production ps`, which shows each container and its health. |
 | Admin users | `docker exec -it ujglobal-production-api-1 python -m app.cli create-user / set-password / deactivate ...` |
 | Backups | Daily at 02:47 UTC into `/srv/ujglobal/backups/<stack>/`, kept 14 days, plus one before every production deploy. Check: `systemctl list-timers 'ujglobal-backup*'`. |
-| Off-server backups | Install `rclone`, configure a remote (for example Cloudflare R2), and set `BACKUP_REMOTE=r2:ujglobal-backups` in `production/.env`. |
+| Off-server backups | Install `rclone`, add your bucket as a remote (for example Cloudflare R2, named `r2`), then add a second remote of **type `crypt`** wrapping it (for example `r2crypt` → `r2:ujglobal-backups`) with a long random password kept in your password manager. Set `BACKUP_REMOTE=r2crypt:` in `production/.env`. The backup script refuses to upload to a remote that isn't encrypted. |
+| Two-factor reset | `docker exec -it ujglobal-production-api-1 python -m app.cli reset-mfa --email ...` (they set it up again at their next sign-in). |
+| Locked out by too many attempts | Sign-in unlocks itself after 15 minutes. The owners get an email whenever an account or address is locked. |
 | Test a restore (monthly) | `/srv/ujglobal/infra/server/restore.sh staging /srv/ujglobal/backups/production/<latest>.dump`, then check staging. It takes a safety backup of staging first. |
 | Restore production | `restore.sh production <file>`. It asks you to type `production`, and backs up the current data first, so a restore can be undone. |
 | Change a setting | Edit the stack's `.env`, then `/srv/ujglobal/infra/server/stack.sh production up -d`. |

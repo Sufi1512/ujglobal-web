@@ -9,6 +9,7 @@ PRODUCTION_READY = {
     "ip_hash_salt": "a-real-random-salt",
     "smtp_host": "smtp.resend.com",
     "revalidate_secret": "another-random-shared-value",
+    "mfa_encryption_key": "m" * 40,
 }
 
 
@@ -25,6 +26,8 @@ def test_production_settings_load_when_everything_is_set():
         ({"smtp_host": "localhost"}, "SMTP_HOST"),
         ({"smtp_host": ""}, "SMTP_HOST"),
         ({"revalidate_secret": "dev-only-revalidate-secret"}, "REVALIDATE_SECRET"),
+        ({"mfa_encryption_key": "dev-only-insecure-mfa-key-change-me"}, "MFA_ENCRYPTION_KEY"),
+        ({"mfa_encryption_key": "too-short"}, "MFA_ENCRYPTION_KEY"),
     ],
 )
 def test_production_refuses_unsafe_defaults(override, message):

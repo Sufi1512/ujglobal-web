@@ -68,6 +68,39 @@ def decode_access_token(token: str) -> uuid.UUID | None:
         return None
 
 
+MFA_TOKEN_MINUTES = 5
+
+
+def create_mfa_token(user_id: uuid.UUID) -> str:
+    """Proof that the password was right, valid for a few minutes, exchanged for a session only together
+    with a correct authenticator or backup code. It grants no access on its own."""
+    now = datetime.now(UTC)
+    payload = {
+        "sub": str(user_id),
+        "type": "mfa",
+        "iss": JWT_ISSUER,
+        "iat": now,
+        "exp": now + timedelta(minutes=MFA_TOKEN_MINUTES),
+    }
+    return jwt.encode(payload, get_settings().jwt_secret, algorithm=JWT_ALGORITHM)
+
+
+def decode_mfa_token(token: str) -> uuid.UUID | None:
+    try:
+        payload = jwt.decode(
+            token,
+            get_settings().jwt_secret,
+            algorithms=[JWT_ALGORITHM],
+            issuer=JWT_ISSUER,
+            options={"require": ["sub", "exp", "iat", "iss"]},
+        )
+        if payload.get("type") != "mfa":
+            return None
+        return uuid.UUID(payload["sub"])
+    except (jwt.PyJWTError, ValueError):
+        return None
+
+
 def new_refresh_token() -> str:
     return secrets.token_urlsafe(48)
 

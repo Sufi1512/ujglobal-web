@@ -7,7 +7,21 @@ export type ContactPayload = {
   message: string;
   consent: boolean;
   website?: string; // honeypot, must stay empty
+  turnstile_token?: string; // Cloudflare's "are you human" check, when it's switched on
 };
+
+/** Cloudflare Turnstile site key. Empty means the check is off (it must match TURNSTILE_SECRET in the API). */
+export const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+/** A refused submission whose message is meant for the visitor (too many messages, failed check). */
+export class ContactError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
 
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
 
@@ -30,6 +44,13 @@ export async function submitContact(payload: ContactPayload): Promise<void> {
     }),
   });
   if (!res.ok) {
-    throw new Error(`Contact request failed with status ${res.status}`);
+    let detail = "";
+    try {
+      const body = await res.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // not JSON
+    }
+    throw new ContactError(res.status, detail || `Contact request failed with status ${res.status}`);
   }
 }

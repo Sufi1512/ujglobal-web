@@ -1,5 +1,6 @@
 import { ArrowRight, CalendarCheck, KeyRound, MessagesSquare, SearchCheck, UsersRound } from "lucide-react";
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
 import { CaseStudyCard } from "@/components/CaseStudyCard";
 import { CtaPanel } from "@/components/CtaPanel";
 import { HeroShowcase } from "@/components/home/HeroShowcase";
@@ -97,7 +98,7 @@ export default async function Home() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }} />
+      <JsonLd data={faqJsonLd(faqs)} />
 
       {/* Hero */}
       <section className="relative -mt-16 overflow-hidden pt-16 sm:-mt-[72px] sm:pt-[72px]">

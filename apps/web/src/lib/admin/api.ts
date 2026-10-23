@@ -8,7 +8,21 @@ import { API_URL } from "@/lib/api";
  */
 
 export type Role = "owner" | "editor" | "sales";
-export type AdminUser = { id: string; email: string; name: string; role: Role; last_login_at: string | null };
+export type AdminUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  last_login_at: string | null;
+  /** Two-factor sign-in is on for this account. */
+  mfa_enabled: boolean;
+  /** This role must use two-factor sign-in; until it's on, admin sections are blocked. */
+  mfa_required: boolean;
+};
+
+export type MfaSetup = { secret: string; otpauth_uri: string; qr_data_uri: string };
+/** Password accepted: either signed in, or an authenticator code is needed next. */
+export type LoginResult = { kind: "signed-in"; user: AdminUser } | { kind: "mfa"; mfaToken: string };
 
 export const LEAD_STATUSES = ["new", "contacted", "qualified", "proposal", "won", "lost"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -178,12 +192,27 @@ export function refreshSession(): Promise<TokenResponse | null> {
   return refreshing;
 }
 
-export async function login(email: string, password: string): Promise<AdminUser> {
+export async function login(email: string, password: string): Promise<LoginResult> {
   const res = await fetch(`${API_URL}/v1/auth/login`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw await toApiError(res);
+  const data: TokenResponse | { mfa_required: true; mfa_token: string } = await res.json();
+  if ("mfa_token" in data) return { kind: "mfa", mfaToken: data.mfa_token };
+  accessToken = data.access_token;
+  return { kind: "signed-in", user: data.user };
+}
+
+/** Second sign-in step: the code from the authenticator app, or a backup code. */
+export async function verifyMfa(mfaToken: string, code: string): Promise<AdminUser> {
+  const res = await fetch(`${API_URL}/v1/auth/mfa/verify`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mfa_token: mfaToken, code }),
   });
   if (!res.ok) throw await toApiError(res);
   const data: TokenResponse = await res.json();
@@ -236,6 +265,9 @@ function query(filters: LeadFilters): string {
 
 export const adminApi = {
   me: () => request<AdminUser>("/v1/auth/me"),
+  startMfaSetup: () => request<MfaSetup>("/v1/auth/mfa/setup", { method: "POST" }),
+  enableMfa: (code: string) =>
+    request<{ backup_codes: string[] }>("/v1/auth/mfa/enable", { method: "POST", body: JSON.stringify({ code }) }),
   leads: (filters: LeadFilters) => request<LeadPage>(`/v1/admin/leads${query(filters)}`),
   lead: (id: string) => request<LeadDetail>(`/v1/admin/leads/${id}`),
   updateLead: (id: string, changes: { status?: LeadStatus; assignee_id?: string | null }) =>

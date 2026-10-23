@@ -11,6 +11,7 @@ STACK="${1:?usage: restore.sh <production|staging> <file.dump> [--yes]}"
 FILE="${2:?backup file required}"
 ROOT="${UJ_ROOT:-/srv/ujglobal}"
 ENV_FILE="$ROOT/$STACK/.env"
+WEB_ENV_FILE="$ROOT/$STACK/web.env"
 INFRA="$ROOT/infra"
 
 case "$STACK" in production | staging) ;; *) echo "Unknown stack: $STACK" >&2; exit 2 ;; esac
@@ -38,7 +39,7 @@ STATE="$ROOT/$STACK/deployed.env"
 [[ -f "$STATE" ]] || { echo "Missing $STATE (deploy at least once first)." >&2; exit 1; }
 WEB_TAG="$(sed -n 's/^WEB_TAG=//p' "$STATE")"
 API_TAG="$(sed -n 's/^API_TAG=//p' "$STATE")"
-export ENV_FILE WEB_TAG API_TAG
+export ENV_FILE WEB_ENV_FILE WEB_TAG API_TAG
 compose() { docker compose -f "$INFRA/compose.app.yml" --env-file "$ENV_FILE" "$@"; }
 
 compose stop web api worker

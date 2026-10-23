@@ -12,6 +12,7 @@ from app.workers.tasks import (
     purge_expired_data,
     revalidate_web,
     send_lead_alert,
+    send_security_alert,
     sweep_unsent_lead_alerts,
 )
 
@@ -23,7 +24,7 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 
 
 class WorkerSettings:
-    functions = [send_lead_alert, revalidate_web]
+    functions = [send_lead_alert, revalidate_web, send_security_alert]
     cron_jobs = [
         cron(sweep_unsent_lead_alerts, second=0, run_at_startup=True),
         # Daily at 03:17 UTC, a quiet hour; off the hour so it doesn't pile onto other jobs.

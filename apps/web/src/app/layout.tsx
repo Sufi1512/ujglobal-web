@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -27,13 +28,15 @@ export const viewport: Viewport = {
 };
 
 // The public site (app/(site)) and the admin panel (app/admin) each add their own chrome.
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Set per request by middleware.ts; the Content Security Policy only lets scripts with it run.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     // The inline script marks the page as JS-enabled before first paint, so scroll fades never hide
     // content from visitors (or crawlers) without JavaScript.
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>{children}</body>
     </html>

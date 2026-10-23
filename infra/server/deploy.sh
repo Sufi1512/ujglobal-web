@@ -16,10 +16,13 @@ INFRA="$ROOT/infra"
 case "$STACK" in production | staging) ;; *) echo "Unknown stack: $STACK" >&2; exit 2 ;; esac
 
 ENV_FILE="$ROOT/$STACK/.env"
+WEB_ENV_FILE="$ROOT/$STACK/web.env"
 STATE="$ROOT/$STACK/deployed.env"
-[[ -f "$ENV_FILE" ]] || { echo "Missing $ENV_FILE: create it with infra/server/new-env.sh first (docs/DEPLOY.md, step 4)." >&2; exit 1; }
+for f in "$ENV_FILE" "$WEB_ENV_FILE"; do
+	[[ -f "$f" ]] || { echo "Missing $f: create it with infra/server/new-env.sh first (docs/DEPLOY.md, step 4)." >&2; exit 1; }
+done
 
-export ENV_FILE WEB_TAG API_TAG
+export ENV_FILE WEB_ENV_FILE WEB_TAG API_TAG
 compose() { docker compose -f "$INFRA/compose.app.yml" --env-file "$ENV_FILE" "$@"; }
 log() { printf '\n==> %s\n' "$*"; }
 

@@ -38,13 +38,22 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+MFA_SETUP_REQUIRED = "Two-factor sign-in is required for your role. Set it up under Security first."
+
+
 def require_roles(*roles: UserRole) -> Callable[[User], Awaitable[User]]:
-    """Dependency that allows only the given roles. Owners are always allowed."""
+    """Dependency that allows only the given roles. Owners are always allowed.
+
+    Roles in MFA_REQUIRED_ROLES must also have two-factor sign-in turned on: until they do, they can sign
+    in and set it up, but every protected admin endpoint answers 403.
+    """
     allowed = {UserRole.owner, *roles}
 
     async def check(user: CurrentUser) -> User:
         if user.role not in allowed:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed for your role")
+        if user.mfa_required and not user.mfa_enabled:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=MFA_SETUP_REQUIRED)
         return user
 
     return check

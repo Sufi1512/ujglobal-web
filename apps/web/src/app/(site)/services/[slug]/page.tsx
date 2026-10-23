@@ -1,6 +1,7 @@
 import { ArrowRight, Check, CircleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { CaseStudyCard } from "@/components/CaseStudyCard";
@@ -59,7 +60,7 @@ export default async function ServicePage({ params }: Props) {
 
   return (
     <article>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <JsonLd data={jsonLd} />
       <PageHero
         breadcrumb={
           <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted">
