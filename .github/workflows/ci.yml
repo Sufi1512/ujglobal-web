@@ -83,6 +83,20 @@ jobs:
           ENV_FILE=/tmp/app.env WEB_ENV_FILE=/tmp/app.env WEB_TAG=x API_TAG=x docker compose -f infra/compose.app.yml --env-file /tmp/app.env config --quiet
           sudo mkdir -p /srv/ujglobal/edge && sudo touch /srv/ujglobal/edge/.env
           docker compose -f infra/edge/compose.yml config --quiet
+          # Live site: compose.yml + .env.production (from the example, with generated secrets)
+          grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' .env.production.example > .env.production
+          bash infra/server/gen-secrets.sh >> .env.production
+          docker compose config --format json > /tmp/live.json
+          # Only the gateway publishes a port (127.0.0.1:9005), the API gets the database settings, and the
+          # website gets no secrets.
+          jq -e '[.services[] | select(.ports) | .ports[] | "\(.host_ip):\(.published)"] == ["127.0.0.1:9005"]' /tmp/live.json
+          jq -e '.services.api.environment.DATABASE_URL | startswith("postgresql+asyncpg://")' /tmp/live.json
+          jq -e '.services.web.environment | has("JWT_SECRET") | not' /tmp/live.json
+          jq -e '.services | has("postgres") | not' /tmp/live.json
+          # Local development: compose.dev.yml + .env.local, every port bound to this computer only
+          cp .env.local.example .env.local
+          docker compose -f compose.dev.yml config --format json > /tmp/dev.json
+          jq -e '[.services[] | select(.ports) | .ports[] | .host_ip] | all(. == "127.0.0.1")' /tmp/dev.json
       - name: Caddy config is valid
         run: |
           mkdir -p /tmp/certs
@@ -90,6 +104,8 @@ jobs:
             -keyout /tmp/certs/origin.key -out /tmp/certs/origin.pem 2>/dev/null
           docker run --rm -v "$PWD/infra/edge:/etc/caddy:ro" -v /tmp/certs:/certs:ro \
             -e STAGING_USER=ci -e 'STAGING_PASSWORD_HASH=$2b$12$aSnslqsSDjaWZHsrD7NhneqovhDESi7GlBMOc5mIJNkVXHLh3.TBW' \
+            caddy:2.8-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+          docker run --rm -v "$PWD/infra/single-port:/etc/caddy:ro" \
             caddy:2.8-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
   # Builds the Docker images to prove the Dockerfiles still work. Nothing is pushed anywhere: the site is

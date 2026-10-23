@@ -1,0 +1,12 @@
+# UJ Global, LOCAL DEVELOPMENT. Settings: .env.local (copy .env.local.example; the defaults just work).
+#
+#   docker compose -f compose.dev.yml up --build
+#
+# Site http://localhost:9006 · API http://localhost:9005/docs · test inbox http://localhost:8025
+# The stack itself is in infra/compose.local.yml. Needs Docker Compose 2.20 or newer.
+
+name: ujglobal-dev
+
+include:
+  - path: infra/compose.local.yml
+    env_file: .env.local

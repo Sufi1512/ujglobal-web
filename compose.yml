@@ -1,72 +1,14 @@
-# Local development stack: `docker compose up --build`
-services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ujglobal
-    ports: ["5432:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      retries: 10
+# UJ Global, LIVE SITE. Settings: .env.production (copy .env.production.example and fill it in).
+#
+#   docker compose up -d --build
+#
+# The whole site answers on one port (9005) and uses your existing PostgreSQL; the stack itself is in
+# infra/compose.live.yml. Needs Docker Compose 2.20 or newer. Guide: docs/DEPLOY-SINGLE-PORT.md.
+#
+# On your own computer use the development setup instead: docker compose -f compose.dev.yml up --build
 
-  redis:
-    image: redis:7-alpine
-    ports: ["6379:6379"]
+name: ujglobal
 
-  mailpit:
-    image: axllent/mailpit:v1.21
-    ports: ["8025:8025", "1025:1025"]
-
-  api:
-    build: ./apps/api
-    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 9005 --reload"
-    environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ujglobal
-      CORS_ORIGINS: '["http://localhost:9006"]'
-      COOKIE_SECURE: "false"
-      REDIS_URL: redis://redis:6379/0
-    volumes: ["./apps/api/app:/app/app", "./apps/api/alembic:/app/alembic"]
-    ports: ["9005:9005"]
-    depends_on:
-      postgres: { condition: service_healthy }
-      redis: { condition: service_started }
-
-  # Sends new-lead alerts (and later other background jobs). Emails land in Mailpit: http://localhost:8025
-  worker:
-    build: ./apps/api
-    command: arq app.workers.main.WorkerSettings --watch app
-    # Comes back on its own if Redis restarts; leads queued meanwhile are caught by the sweep.
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/ujglobal
-      REDIS_URL: redis://redis:6379/0
-      SMTP_HOST: mailpit
-      SMTP_PORT: "1025"
-      SMTP_SECURITY: none
-      LEAD_ALERT_RECIPIENTS: '["team@ujglobal.tech"]'
-      ADMIN_BASE_URL: http://localhost:9006
-      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
-    volumes: ["./apps/api/app:/app/app"]
-    depends_on:
-      api: { condition: service_started }
-      mailpit: { condition: service_started }
-
-  web:
-    image: node:22-alpine
-    working_dir: /app
-    command: sh -c "npm ci && npm run dev"
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:9005
-      # Server-side rendering reaches the API inside the Docker network.
-      API_INTERNAL_URL: http://api:9005
-      REVALIDATE_SECRET: dev-only-revalidate-secret
-    volumes: ["./apps/web:/app", "/app/node_modules"]
-    ports: ["9006:9006"]
-    depends_on: [api]
-
-volumes:
-  pgdata:
+include:
+  - path: infra/compose.live.yml
+    env_file: .env.production

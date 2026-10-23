@@ -4,8 +4,13 @@ node_modules/
 __pycache__/
 .env
 .env.local
+.env.production
 *.log
 .DS_Store
 
 # Local Redis snapshot
 dump.rdb
+
+# Settings examples are committed; the real files are not
+!.env.local.example
+!.env.production.example

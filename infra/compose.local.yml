@@ -1,0 +1,79 @@
+# The development stack, loaded by compose.dev.yml together with .env.local. Every ${...} below comes
+# from that file (with safe local defaults). Paths are relative to this folder. Host ports are bound to
+# this computer only, and Postgres and Redis use 5433 and 6380 on the host so they don't clash with
+# copies you may already run.
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports: ["127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["127.0.0.1:${REDIS_HOST_PORT:-6380}:6379"]
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports: ["127.0.0.1:8025:8025", "127.0.0.1:1025:1025"]
+
+  api:
+    build: ../apps/api
+    command: sh -c "python -m app.db_bootstrap && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 9005 --reload"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env.local (see .env.local.example)}
+      CORS_ORIGINS: '["${SITE_URL:-http://localhost:9006}"]'
+      ADMIN_BASE_URL: ${SITE_URL:-http://localhost:9006}
+      COOKIE_SECURE: "false"
+      REDIS_URL: redis://redis:6379/0
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev-only-revalidate-secret}
+      MFA_REQUIRED_ROLES: ${MFA_REQUIRED_ROLES:-["owner","sales"]}
+    volumes: ["../apps/api/app:/app/app", "../apps/api/alembic:/app/alembic"]
+    ports: ["127.0.0.1:${API_PORT:-9005}:9005"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  # Sends new-lead alerts (and later other background jobs). Emails land in Mailpit: http://localhost:8025
+  worker:
+    build: ../apps/api
+    command: arq app.workers.main.WorkerSettings --watch app
+    # Comes back on its own if Redis restarts; leads queued meanwhile are caught by the sweep.
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env.local (see .env.local.example)}
+      REDIS_URL: redis://redis:6379/0
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev-only-revalidate-secret}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_SECURITY: none
+      LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-["team@ujglobal.tech"]}
+      ADMIN_BASE_URL: ${SITE_URL:-http://localhost:9006}
+      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
+    volumes: ["../apps/api/app:/app/app"]
+    depends_on:
+      api: { condition: service_started }
+      mailpit: { condition: service_started }
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev"
+    environment:
+      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:9005}
+      # Server-side rendering reaches the API inside the Docker network.
+      API_INTERNAL_URL: http://api:9005
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev-only-revalidate-secret}
+    volumes: ["../apps/web:/app", "/app/node_modules"]
+    ports: ["127.0.0.1:${WEB_PORT:-9006}:9006"]
+    depends_on: [api]
+
+volumes:
+  pgdata:

@@ -1,0 +1,62 @@
+# Single-port gateway: one port (9005) for the whole site, for hosting panels that map a domain to a
+# single port. HTTPS is handled in front of this (by the hosting platform or Cloudflare); this listens
+# on plain HTTP inside the server.
+#
+#   https://your-domain/v1/...  and  /health  -> API     (api:9005)
+#   https://your-domain/...                   -> website (web:9006)
+#
+# The website and API share one domain, so the browser calls the API on the same origin: no CORS, and
+# the admin's sign-in cookie stays first-party.
+
+{
+	auto_https off
+	admin off
+	servers {
+		# The hosting platform's proxy (or Docker's) connects from a private address; believe the visitor
+		# address it forwards only from there. Add Cloudflare's ranges here if Cloudflare sits in front.
+		trusted_proxies static private_ranges
+		client_ip_headers Cf-Connecting-Ip X-Forwarded-For X-Real-Ip
+	}
+}
+
+:9005 {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+
+	# The cache-refresh endpoint is only for the worker, which calls the website directly inside Docker.
+	@internal path /api/revalidate /api/revalidate/*
+	handle @internal {
+		respond 404
+	}
+
+	@api path /v1/* /health
+	handle @api {
+		request_body {
+			max_size 64KB
+		}
+		header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+		reverse_proxy api:9005 {
+			# The only address the API believes, overwritten here with the one Caddy verified.
+			header_up X-Real-IP {client_ip}
+		}
+	}
+
+	handle {
+		reverse_proxy web:9006 {
+			header_up X-Real-IP {client_ip}
+		}
+	}
+}
