@@ -114,9 +114,9 @@ def received_settings_report(environ: dict[str, str] | None = None) -> str:
     present = sorted(k for k in env if k in known and env[k] != "")
     if not present:
         return (
-            "This container received none of the site's settings. The hosting panel isn't passing the "
-            "compose `environment` (or a .env file) to it: check the panel's environment variables "
-            "for this app."
+            "This container received none of the site's settings: no environment variables from the "
+            "hosting panel, and no .env next to compose.yml when the images were built. Add the settings "
+            "to that .env (or the panel's environment variables) and redeploy."
         )
     return "Settings this container received (names only): " + ", ".join(present)
 
