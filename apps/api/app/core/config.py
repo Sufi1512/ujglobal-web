@@ -12,7 +12,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     environment: str = "local"
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ujglobal"
+    # Required, with no default: the PostgreSQL the site uses, including the database name. That database
+    # is created on start if it doesn't exist (app/db_bootstrap.py). postgres:// and postgresql:// URLs
+    # are accepted and switched to the async driver.
+    database_url: str = ""
     # Optional admin connection (e.g. the `postgres` superuser), used only at start-up to create the
     # site's database user and database when they don't exist yet. Without it the API creates just the
     # database, which needs the DATABASE_URL user to be allowed to (CREATEDB).
@@ -73,6 +76,34 @@ class Settings(BaseSettings):
     # Empty URL turns this off; pages then still refresh on their own within 5 minutes.
     web_revalidate_url: str | None = "http://localhost:9006/api/revalidate"
     revalidate_secret: str = "dev-only-revalidate-secret"
+
+    @model_validator(mode="after")
+    def require_database_url(self) -> "Settings":
+        url = self.database_url.strip()
+        if not url:
+            raise ValueError(
+                "DATABASE_URL is required: set it to your PostgreSQL, including the database name, e.g. "
+                "postgresql+asyncpg://USER:PASSWORD@HOST:5432/ujglobal (the database is created if missing)"
+            )
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                url = "postgresql+asyncpg://" + url[len(prefix) :]
+        if not url.startswith("postgresql+asyncpg://"):
+            raise ValueError(
+                "DATABASE_URL must be a PostgreSQL URL (postgresql://... or postgresql+asyncpg://...)"
+            )
+        tail = url.split("://", 1)[1]
+        database = tail.split("/", 1)[1].split("?", 1)[0] if "/" in tail else ""
+        if "@" not in tail or not database:
+            raise ValueError(
+                "DATABASE_URL must include a user and a database name, e.g. "
+                "postgresql+asyncpg://USER:PASSWORD@HOST:5432/ujglobal"
+            )
+        self.database_url = url
+        for prefix in ("postgres://", "postgresql://"):
+            if self.database_admin_url and self.database_admin_url.startswith(prefix):
+                self.database_admin_url = "postgresql+asyncpg://" + self.database_admin_url[len(prefix) :]
+        return self
 
     @model_validator(mode="after")
     def require_real_secrets_outside_dev(self) -> "Settings":

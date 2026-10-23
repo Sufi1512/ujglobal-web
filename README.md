@@ -35,6 +35,7 @@ docker compose -f compose.dev.yml up --build
 Without Docker (needs Node 22, Python 3.12+, [uv](https://docs.astral.sh/uv/) and a local Postgres):
 
 ```bash
+export DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:5432/ujglobal   # required; created if missing
 cd apps/api && uv sync && uv run python -m app.db_bootstrap && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --port 9005
 cd apps/web && npm install && npm run dev
 ```

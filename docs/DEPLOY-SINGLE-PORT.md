@@ -32,7 +32,7 @@ nano .env.production
 | Setting | Value |
 | --- | --- |
 | `SITE_URL` | your domain with https, e.g. `https://ujglobal.tech` |
-| `DATABASE_URL` | the site's user and database in your PostgreSQL, e.g. `postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal` |
+| `DATABASE_URL` | **required, no default**: the site's user and database in your PostgreSQL, e.g. `postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal` (`postgres://...` works too). The API refuses to start without it |
 | `DATABASE_ADMIN_URL` | optional, see step 2 |
 | `JWT_SECRET`, `IP_HASH_SALT`, `REVALIDATE_SECRET`, `MFA_ENCRYPTION_KEY` | the four lines from `gen-secrets.sh`. Keep `MFA_ENCRYPTION_KEY` the same forever |
 | `SMTP_*`, `LEAD_ALERT_RECIPIENTS` | your email provider (docs/DEPLOY.md, step 5), or `LEAD_ALERT_RECIPIENTS=[]` to switch alerts off for now |
@@ -44,7 +44,7 @@ If your hosting panel rebuilds the folder on every deploy, use its "environment 
 
 ## 2. The database is created for you
 
-On every start the API checks your PostgreSQL (13 or newer), **creates the database if it doesn't exist**, then creates or updates its tables. Pick one:
+On every start the API checks the PostgreSQL in `DATABASE_URL` (13 or newer), **creates the database named there if it doesn't exist**, then creates or updates its tables. There is no built-in database address: without `DATABASE_URL` nothing starts. Pick one:
 
 - **Simplest:** set `DATABASE_ADMIN_URL` to an admin connection, e.g. `postgresql+asyncpg://postgres:ADMIN_PASSWORD@host.docker.internal:5432/postgres`. The API then also creates the site's user from `DATABASE_URL`, with that password. You can remove the admin URL after the first successful start.
 - **Without an admin URL:** create the user once, allowed to create its own database: `CREATE USER ujglobal WITH PASSWORD '...' CREATEDB;`. The API creates the database.

@@ -17,6 +17,7 @@ import logging
 import sys
 
 import asyncpg
+from pydantic import ValidationError
 from sqlalchemy.engine import URL, make_url
 
 from app.core.config import get_settings
@@ -107,7 +108,13 @@ async def ensure_database(database_url: str, admin_url: str | None = None) -> li
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    settings = get_settings()
+    try:
+        settings = get_settings()
+    except ValidationError as exc:
+        # e.g. no DATABASE_URL: print the plain reason, not a stack trace.
+        for error in exc.errors():
+            log.error("%s", str(error["msg"]).removeprefix("Value error, "))
+        sys.exit(1)
     try:
         done = asyncio.run(ensure_database(settings.database_url, settings.database_admin_url))
     except Exception as exc:

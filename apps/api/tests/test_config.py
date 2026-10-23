@@ -10,6 +10,7 @@ PRODUCTION_READY = {
     "smtp_host": "smtp.resend.com",
     "revalidate_secret": "another-random-shared-value",
     "mfa_encryption_key": "m" * 40,
+    "database_url": "postgresql+asyncpg://ujglobal:pw@db.example:5432/ujglobal",
 }
 
 
@@ -42,3 +43,29 @@ def test_alerts_can_be_switched_off_without_smtp():
 
 def test_local_development_needs_no_secrets():
     assert Settings(environment="local").smtp_host == "localhost"
+
+
+@pytest.mark.parametrize("url", ["", "   "])
+def test_database_url_is_required_with_no_default(url, monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    with pytest.raises(ValidationError, match="DATABASE_URL is required"):
+        Settings(database_url=url)
+    with pytest.raises(ValidationError, match="DATABASE_URL is required"):
+        Settings(_env_file=None)
+
+
+@pytest.mark.parametrize(
+    "url",
+    ["mysql://u:p@h/db", "postgresql+asyncpg://u:p@h:5432", "postgresql+asyncpg://h:5432/db"],
+)
+def test_database_url_must_be_postgres_with_user_and_database(url):
+    with pytest.raises(ValidationError, match="DATABASE_URL must"):
+        Settings(database_url=url)
+
+
+def test_plain_postgres_urls_get_the_async_driver():
+    settings = Settings(
+        database_url="postgres://u:p@h:5432/site", database_admin_url="postgresql://admin:p@h:5432/postgres"
+    )
+    assert settings.database_url == "postgresql+asyncpg://u:p@h:5432/site"
+    assert settings.database_admin_url == "postgresql+asyncpg://admin:p@h:5432/postgres"
