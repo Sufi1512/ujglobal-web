@@ -78,3 +78,33 @@ def test_example_email_placeholders_are_refused():
         )
     # With alerts off the placeholders don't matter.
     Settings(**{**PRODUCTION_READY, "smtp_host": "REPLACE_smtp_server", "lead_alert_recipients": []})
+
+
+def test_settings_files_later_ones_win_and_env_vars_win_over_files(tmp_path, monkeypatch):
+    # The live images read built-in defaults, then the panel's .env (later files win).
+    for name in ("ENVIRONMENT", "REDIS_URL", "SITE_URL", "CORS_ORIGINS", "ADMIN_BASE_URL", "DATABASE_URL"):
+        monkeypatch.delenv(name, raising=False)
+    defaults = tmp_path / "defaults.env"
+    defaults.write_text("REDIS_URL=redis://redis:6379/0\nCOOKIE_SECURE=true\n")
+    panel = tmp_path / ".env"
+    panel.write_text(
+        "DATABASE_URL=postgres://ujglobal:pw@compose-postgresql:5432/ujglobal\n"
+        "REDIS_URL=redis://other:6379/1\nSITE_URL=https://ujglobal.tech/\n"
+        "EMAIL_FROM=UJ Global <no-reply@ujglobal.tech>\n"
+    )
+    settings = Settings(_env_file=(str(tmp_path / "missing.env"), str(defaults), str(panel)))
+    assert settings.redis_url == "redis://other:6379/1"
+    assert settings.database_url == "postgresql+asyncpg://ujglobal:pw@compose-postgresql:5432/ujglobal"
+    assert settings.email_from == "UJ Global <no-reply@ujglobal.tech>"
+    monkeypatch.setenv("REDIS_URL", "redis://from-env:6379/0")
+    assert Settings(_env_file=(str(defaults), str(panel))).redis_url == "redis://from-env:6379/0"
+
+
+def test_site_url_fills_cors_and_admin_url_unless_they_are_set():
+    settings = Settings(**PRODUCTION_READY, site_url="https://ujglobal.tech/")
+    assert settings.cors_origins == ["https://ujglobal.tech"]
+    assert settings.admin_base_url == "https://ujglobal.tech"
+    own = Settings(
+        **PRODUCTION_READY, site_url="https://ujglobal.tech", admin_base_url="https://admin.example"
+    )
+    assert own.admin_base_url == "https://admin.example"

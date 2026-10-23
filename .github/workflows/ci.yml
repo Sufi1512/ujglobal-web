@@ -133,3 +133,19 @@ jobs:
             NEXT_PUBLIC_SITE_URL=https://ujglobal.tech
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max
+      # The live images build from the repository root and read the .env next to compose.yml, for hosting
+      # panels that don't pass environment variables to containers. Prove the API loads it from inside its
+      # image (with no environment variables) and the gateway has its routing built in.
+      - name: Live images read the .env built into them
+        run: |
+          grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' .env.production.example \
+            | sed -e 's/^LEAD_ALERT_RECIPIENTS=.*/LEAD_ALERT_RECIPIENTS=[]/' -e 's#^SITE_URL=.*#SITE_URL=https://ci.example#' > .env
+          bash infra/server/gen-secrets.sh >> .env
+          docker build -q -f infra/single-port/api.Dockerfile -t live-api .
+          docker run --rm live-api python -c "from app.core.config import get_settings as g; s = g(); \
+            assert s.environment == 'production' and s.redis_url == 'redis://redis:6379/0', s; \
+            assert s.cors_origins == ['https://ci.example'] and s.admin_base_url == 'https://ci.example'; \
+            assert s.database_url.startswith('postgresql+asyncpg://'); print('settings OK')"
+          docker run --rm live-api sh -c 'ls -A /app/settings' | sort | tr '\n' ' ' | grep -qx '.env defaults.env '
+          docker build -q -f infra/single-port/gateway.Dockerfile -t live-gateway .
+          docker run --rm live-gateway caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

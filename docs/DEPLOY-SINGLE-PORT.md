@@ -45,6 +45,10 @@ nano .env
 
 Settings set in the panel win over the `.env` file. The deploy stops with a clear "set X in .env or the panel's environment variables" message if something required is missing.
 
+### If your panel doesn't pass settings to containers
+
+Some panels read your `.env` but start the containers without it (the API logs `received none of the site's settings`). The live images are therefore built from the repository root and **copy in the `.env` that sits next to `compose.yml` at build time**: the API reads it from inside its image, and the website takes `SITE_URL` and `REVALIDATE_SECRET` from it. So with such a panel, make sure the `.env` is in the app's root folder **before** you deploy, and redeploy after changing it. The images are built on your server and never pushed anywhere. Environment variables, when they do arrive, take priority over the file.
+
 ## 2. The database is created for you
 
 On every start the API checks the PostgreSQL in `DATABASE_URL` (13 or newer), **creates the database named there if it doesn't exist**, then creates or updates its tables. There is no built-in database address: without `DATABASE_URL` nothing starts. Pick one:

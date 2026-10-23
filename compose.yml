@@ -8,6 +8,9 @@
 # No Postgres container: the API and worker use your existing PostgreSQL (DATABASE_URL), and the API
 # creates the database there on first start if it's missing. Redis runs inside the stack, unpublished.
 # One self-contained file on purpose: hosting panels that rewrite compose files often mishandle `include`.
+# The images are built from the repository root and copy in the `.env` next to this file, so the site
+# also works on panels that don't pass environment variables to containers (they're built on your
+# server and never pushed anywhere). Environment variables, when they do arrive, take priority.
 # Needs Docker Compose 2.24 or newer. Guide: docs/DEPLOY-SINGLE-PORT.md.
 #
 # On your own computer use the development setup instead: docker compose -f compose.dev.yml up --build
@@ -16,15 +19,14 @@ name: ujglobal
 
 services:
   gateway:
-    image: caddy:2.8-alpine
+    # Caddy with the routing file (infra/single-port/Caddyfile) built in.
+    build: { context: ., dockerfile: infra/single-port/gateway.Dockerfile }
+    image: ujglobal-gateway:latest
     restart: unless-stopped
     # 127.0.0.1 by default: only your hosting panel on this server can reach it, never the internet
     # directly (Docker-published ports skip the firewall). Set PUBLIC_BIND=0.0.0.0 only if the panel
     # connects over the network, and then allow the port from the panel's address alone.
     ports: ["${PUBLIC_BIND:-127.0.0.1}:${PUBLIC_PORT:-9005}:9005"]
-    volumes:
-      - ./infra/single-port/Caddyfile:/etc/caddy/Caddyfile:ro
-      - gatewaydata:/data
     depends_on:
       web: { condition: service_healthy }
       api: { condition: service_healthy }
@@ -32,7 +34,8 @@ services:
 
   web:
     build:
-      context: ./apps/web
+      context: .
+      dockerfile: infra/single-port/web.Dockerfile
       args:
         # Same domain for site and API: the browser calls /v1/... on the site's own address.
         NEXT_PUBLIC_API_URL: ${SITE_URL}
@@ -56,7 +59,7 @@ services:
     logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
 
   api:
-    build: ./apps/api
+    build: { context: ., dockerfile: infra/single-port/api.Dockerfile }
     image: ujglobal-api:latest
     restart: unless-stopped
     # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
@@ -101,8 +104,8 @@ services:
 
   # Background jobs: lead alert emails, website refreshes after edits, nightly retention clean-up.
   worker:
-    build: ./apps/api
-    image: ujglobal-api:latest
+    build: { context: ., dockerfile: infra/single-port/worker.Dockerfile }
+    image: ujglobal-worker:latest
     restart: unless-stopped
     # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
     env_file: [{ path: .env, required: false }]
@@ -157,4 +160,3 @@ networks:
 
 volumes:
   redisdata:
-  gatewaydata:
