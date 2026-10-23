@@ -1,5 +1,7 @@
 # Deploying ujglobal.tech
 
+> **Being reworked (23 Oct 2026).** GitHub no longer publishes images or deploys: UJ Global runs the site on its own server and hosting platforms. The GitHub Actions steps below (step 6, the automatic staging deploy and "Deploy production") no longer exist, and `infra/compose.app.yml` still expects published images. This guide will be rewritten for the chosen hosting before go-live; the server setup, Cloudflare, email, backup and firewall parts still apply.
+
 One Linux server (Ubuntu 22.04/24.04 or Debian 12; 4 vCPU, 8 GB RAM, 80 GB disk is plenty) runs two copies of the site behind Cloudflare:
 
 | Stack | Site | API | Deploys |

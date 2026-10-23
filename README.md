@@ -103,7 +103,7 @@ production**. Setup, day-to-day tasks, backups and restores: [docs/DEPLOY.md](do
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |
 | `infra/server/` | `setup.sh` (one-time), `new-env.sh`, `deploy.sh`, `stack.sh`, `backup.sh`, `restore.sh`, firewall |
-| `.github/workflows/` | `ci.yml` (tests, images, staging), `deploy.yml` (shared), `deploy-production.yml` |
+| `.github/workflows/` | `ci.yml`: tests, infra checks and an image build check (nothing is published or deployed from GitHub) |
 
 ## Status
 
