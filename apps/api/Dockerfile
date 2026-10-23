@@ -9,4 +9,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 RUN useradd --create-home app
 USER app
 EXPOSE 9005
-CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "-w", "2", "-b", "0.0.0.0:9005"]
+# Creates the database if missing, brings its tables up to date, then serves: a redeploy is all an
+# update needs. Part of the image so it runs even if a hosting panel ignores the compose `command`.
+CMD ["sh", "-c", "python -m app.db_bootstrap && alembic upgrade head && exec gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:9005"]

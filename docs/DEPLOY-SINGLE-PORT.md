@@ -17,7 +17,7 @@ Visitor -> hosting panel (HTTPS, domain) -> 127.0.0.1:9005 -> gateway (Caddy) --
 
 The website and API share the domain, so the browser calls the API on the same address: no CORS setup, and the admin's sign-in cookie stays first-party. Images are built on the server from this repository; nothing comes from a registry.
 
-**Two settings files.** The live site reads its settings from your hosting panel's **environment variables**, or from a **`.env`** file next to `compose.yml`; your computer reads **`.env.local`** (with `compose.dev.yml`). Both have a committed example next to them; git ignores the real files. Needs Docker Compose 2.20 or newer (`docker compose version`).
+**Two settings files.** The live site reads its settings from your hosting panel's **environment variables**, or from a **`.env`** file next to `compose.yml`; your computer reads **`.env.local`** (with `compose.dev.yml`). Both have a committed example next to them; git ignores the real files. Needs Docker Compose 2.24 or newer (`docker compose version`).
 
 ## 1. Settings
 
@@ -98,7 +98,7 @@ Sign in at `https://your-domain/admin`. Owners and sales users set up two-factor
 | Message | Fix |
 | --- | --- |
 | `set ... in .env or the panel's environment variables` | That setting is missing or empty: add it in the panel, or in `.env` (step 1) |
-| `additional property include is not allowed` | Docker Compose is older than 2.20: update Docker |
+| `additional property include is not allowed` | Docker Compose is older than 2.24: update Docker |
 | API keeps restarting; logs say `Could not reach PostgreSQL` or `password authentication failed` | Check the host and password in `DATABASE_URL` (and `DATABASE_ADMIN_URL`), and the PostgreSQL settings in step 2 |
 | Logs say `isn't allowed to create it` | Set `DATABASE_ADMIN_URL`, give the user `CREATEDB`, or create the database once (step 2) |
 | `port is already allocated` on 9005 | Something else uses 9005: change `PUBLIC_PORT` and point the domain at that port instead |
