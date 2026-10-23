@@ -1,46 +1,52 @@
 @import "tailwindcss";
 
 /*
- * UJ Global brand: "Signal" (docs/BRAND.md).
+ * UJ Global brand: "Forest" (docs/BRAND.md).
  * Every text pairing below passes WCAG AA (4.5:1) in both themes. Two rules keep it that way:
- *   - `brand` is for FILLS with white text (buttons); blue TEXT, links and focus rings use `link`.
- *   - `signal` green is a FILL only, always with `on-signal` (ink) text on it; never green text.
+ *   - `brand` is for FILLS with `on-brand` text (buttons); green TEXT, links and focus rings use `link`.
+ *   - `signal` amber is a FILL only, always with `on-signal` text on it; never amber text.
  */
 :root {
-  --background: #ffffff;
-  --foreground: #0b1530; /* Ink */
-  --muted: #4a5672; /* Slate */
-  --line: #e3e7f0;
-  --mist: #f3f5fa; /* alternate section background */
-  --brand: #2a4bf0; /* Electric: button fill */
-  --link: #2a4bf0; /* Electric as text */
-  --signal: #19d38a; /* Signal: highlight fill */
-  --on-signal: #0b1530;
-  --mark: #0b1530; /* logo tile: Ink on light, Electric on dark */
+  --background: #f6f3ec; /* Cream */
+  --surface: #ffffff; /* cards and panels */
+  --foreground: #10201c; /* Pine ink */
+  --muted: #55645f; /* Sage */
+  --line: #e4ded1;
+  --mist: #efeadf; /* alternate section background */
+  --brand: #0f6b54; /* Forest: button fill */
+  --on-brand: #ffffff;
+  --link: #0f6b54; /* Forest as text */
+  --signal: #e8a33d; /* Amber: highlight fill */
+  --on-signal: #10201c;
+  --mark: #10201c; /* logo tile: Pine on light, Forest on dark */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a1128;
-    --foreground: #eef1f8;
-    --muted: #a3aec6;
-    --line: #222d4d;
-    --mist: #111a36;
-    --brand: #2a4bf0;
-    --link: #8ea0ff;
-    --signal: #19d38a;
-    --on-signal: #0b1530;
-    --mark: #2a4bf0;
+    --background: #0d1613;
+    --surface: #131f1b;
+    --foreground: #eef0e9;
+    --muted: #a3b0a9;
+    --line: #24332d;
+    --mist: #111c18;
+    --brand: #3cb58f;
+    --on-brand: #0d1613;
+    --link: #6fd0af;
+    --signal: #f0b357;
+    --on-signal: #10201c;
+    --mark: #0f6b54;
   }
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-mist: var(--mist);
   --color-brand: var(--brand);
+  --color-on-brand: var(--on-brand);
   --color-link: var(--link);
   --color-signal: var(--signal);
   --color-on-signal: var(--on-signal);

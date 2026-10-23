@@ -30,7 +30,7 @@ export default async function WorkPage() {
           ))}
         </ul>
       ) : (
-        <div className="mt-10 rounded-2xl border border-line p-8">
+        <div className="mt-10 rounded-2xl border border-line bg-surface p-8">
           <p className="text-muted">Our first projects are on their way.</p>
           <Link href="/contact" className="mt-4 inline-block font-medium text-link hover:underline">
             Tell us about yours

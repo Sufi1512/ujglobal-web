@@ -138,7 +138,7 @@ export function AdminSession({ children }: { children: React.ReactNode }) {
           {canUse(user.role, pathname) || user.role === "owner" ? (
             children
           ) : (
-            <div className="rounded-xl border border-line p-8">
+            <div className="rounded-xl border border-line bg-surface p-8">
               <h1 className="font-display text-2xl font-semibold">Not available for your role</h1>
               <p className="mt-2 text-sm text-muted">
                 This section isn&apos;t part of the {user.role} role. Ask an owner if you need access.

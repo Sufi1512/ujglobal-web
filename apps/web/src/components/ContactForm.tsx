@@ -30,13 +30,13 @@ export function ContactForm() {
 
   if (status === "sent") {
     return (
-      <p role="status" className="rounded-xl border border-line p-6">
+      <p role="status" className="rounded-xl border border-line bg-surface p-6">
         Thanks, we have your message. We will reply with next steps and a quote within one business day.
       </p>
     );
   }
 
-  const field = "mt-1 w-full rounded-lg border border-line bg-background px-3 py-2 outline-none focus:border-link";
+  const field = "mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 outline-none focus:border-link";
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -71,7 +71,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="rounded-full bg-brand px-6 py-3 font-medium text-white hover:opacity-90 disabled:opacity-60"
+        className="rounded-full bg-brand px-6 py-3 font-medium text-on-brand hover:opacity-90 disabled:opacity-60"
       >
         {status === "sending" ? "Sending..." : "Send message"}
       </button>

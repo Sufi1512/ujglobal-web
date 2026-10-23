@@ -91,7 +91,7 @@ function Inbox() {
   const allCount = data ? Object.values(data.status_counts).reduce((sum, n) => sum + n, 0) : null;
   const pages = data ? Math.max(1, Math.ceil(data.total / data.page_size)) : 1;
   const page = filters.page ?? 1;
-  const control = "rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-link";
+  const control = "rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-link";
 
   return (
     <>
@@ -204,7 +204,7 @@ function Inbox() {
             className={`${control} mt-1 block text-foreground`}
           />
         </label>
-        <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90">
+        <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-on-brand hover:opacity-90">
           Search
         </button>
         {FILTER_KEYS.some((key) => key !== "status" && key !== "page" && params.get(key)) && (
@@ -224,7 +224,7 @@ function Inbox() {
         </p>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-line">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface">
         <table className="w-full text-left text-sm md:min-w-[720px]">
           <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
             <tr>

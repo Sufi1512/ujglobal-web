@@ -162,10 +162,10 @@ export default async function ServicePage({ params }: Props) {
         </section>
       )}
 
-      <div className="mt-14 rounded-2xl border border-line p-8">
+      <div className="mt-14 rounded-2xl border border-line bg-surface p-8">
         <h2 className="font-display text-2xl font-semibold">Talk to us about {service.title}</h2>
         <p className="mt-2 text-muted">Every project is priced to its scope. Tell us what you need and we reply within one business day.</p>
-        <Link href="/contact" className="mt-6 inline-block rounded-full bg-brand px-6 py-3 font-medium text-white">
+        <Link href="/contact" className="mt-6 inline-block rounded-full bg-brand px-6 py-3 font-medium text-on-brand">
           Get a quote
         </Link>
       </div>

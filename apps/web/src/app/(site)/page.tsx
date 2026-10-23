@@ -22,12 +22,12 @@ export default async function Home() {
           <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-6xl">{site.tagline}</h1>
           <p className="mt-6 max-w-2xl text-lg text-muted">{site.description}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-semibold text-white hover:opacity-90">
+            <Link href="/contact" className="rounded-full bg-brand px-6 py-3 font-semibold text-on-brand hover:opacity-90">
               Get a quote
             </Link>
             <Link
               href="/services"
-              className="rounded-full border border-line bg-background px-6 py-3 font-semibold hover:border-link"
+              className="rounded-full border border-line bg-surface px-6 py-3 font-semibold hover:border-link"
             >
               Explore services
             </Link>
@@ -44,7 +44,7 @@ export default async function Home() {
             <li key={s.slug}>
               <Link
                 href={`/services/${s.slug}`}
-                className="block h-full rounded-2xl border border-line p-6 transition hover:border-link"
+                className="block h-full rounded-2xl border border-line bg-surface p-6 transition hover:border-link"
               >
                 <h3 className="font-display text-lg font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm text-muted">{s.summary}</p>
@@ -80,7 +80,7 @@ export default async function Home() {
         </h2>
         <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
-            <li key={step.title} className="rounded-2xl border border-line p-6">
+            <li key={step.title} className="rounded-2xl border border-line bg-surface p-6">
               <span className="text-sm font-semibold text-link">0{i + 1}</span>
               <h3 className="mt-2 font-display text-lg font-semibold">{step.title}</h3>
               <p className="mt-2 text-sm text-muted">{step.text}</p>
@@ -90,13 +90,13 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="rounded-3xl bg-brand px-8 py-12 text-white sm:px-12">
+        <div className="rounded-3xl bg-brand px-8 py-12 text-on-brand sm:px-12">
           <h2 className="font-display text-3xl font-semibold">Have a project in mind?</h2>
-          <p className="mt-3 max-w-xl text-white">
+          <p className="mt-3 max-w-xl text-on-brand">
             Tell us what you want to build. We reply within one business day with next steps and a quote.
           </p>
           {/* Fixed white button: brand blue text reads well on white in both themes (6.2:1). */}
-          <Link href="/contact" className="mt-6 inline-block rounded-full bg-white px-6 py-3 font-semibold text-brand">
+          <Link href="/contact" className="mt-6 inline-block rounded-full bg-on-brand px-6 py-3 font-semibold text-brand">
             Start a conversation
           </Link>
         </div>

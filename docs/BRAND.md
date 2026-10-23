@@ -1,17 +1,17 @@
-# UJ Global brand: Signal
+# UJ Global brand: Forest
 
-Chosen 23 Oct 2026 from three directions (Signal, Meridian, Prism). Crisp and technical: deep ink, an electric blue for actions and a signal green for proof points. It reads as credible for all four service lines without boxing us into "AI only".
+Chosen 23 Oct 2026 (option B of three: Midnight + Lime, Forest + Cream, Charcoal + Ember), replacing the first "Signal" palette, whose electric blue felt generic. Warm and confident: a cream page, deep pine text, forest green for actions and an amber accent for highlights. It reads as a calm, senior studio rather than another blue tech site.
 
 The code is the source of truth: colours live in `apps/web/src/app/globals.css`, the mark in `apps/web/src/components/Logo.tsx`.
 
 ## Logo
 
-The mark is a **U whose right side runs into the hook of a J as one connected line**: we wire systems together. White U, Signal-green J, on a rounded tile.
+The mark is a **U whose right side runs into the hook of a J as one connected line**: we wire systems together. White U, amber J, on a rounded tile.
 
 | Use | Tile | Where |
 | --- | --- | --- |
-| On light backgrounds | Ink `#0B1530` | Site header and footer in light mode, favicon, app icons |
-| On dark backgrounds | Electric `#2A4BF0` | Dark mode, share image |
+| On light backgrounds | Pine `#10201C` | Site header and footer in light mode, favicon, app icons |
+| On dark backgrounds | Forest `#0F6B54` | Dark mode, share image |
 
 - Lockup: mark plus "UJ Global" in Space Grotesk 600, gap ≈ 1/3 of the mark's size.
 - Clear space: at least half the mark's width on every side.
@@ -24,20 +24,22 @@ Files: `apps/web/src/app/icon.svg` (browsers), `favicon.ico` (16/32/48 px), `app
 
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
-| `foreground` (Ink) | `#0B1530` | `#EEF1F8` | Body text and headings |
-| `muted` (Slate) | `#4A5672` | `#A3AEC6` | Secondary text |
-| `background` | `#FFFFFF` | `#0A1128` | Page |
-| `mist` | `#F3F5FA` | `#111A36` | Alternate sections (hero) |
-| `line` | `#E3E7F0` | `#222D4D` | Borders, dividers |
-| `brand` (Electric) | `#2A4BF0` | `#2A4BF0` | **Fills** with white text: buttons, CTA panels |
-| `link` | `#2A4BF0` | `#8EA0FF` | **Text** in blue: links, metrics, step numbers, focus rings |
-| `signal` | `#19D38A` | `#19D38A` | **Fills only**: pills, highlights, "Contacted" status |
-| `on-signal` | `#0B1530` | `#0B1530` | Text on Signal |
+| `foreground` (Pine) | `#10201C` | `#EEF0E9` | Body text and headings |
+| `muted` (Sage) | `#55645F` | `#A3B0A9` | Secondary text |
+| `background` (Cream) | `#F6F3EC` | `#0D1613` | Page |
+| `surface` | `#FFFFFF` | `#131F1B` | Cards, panels, form fields |
+| `mist` | `#EFEADF` | `#111C18` | Alternate sections |
+| `line` | `#E4DED1` | `#24332D` | Borders, dividers |
+| `brand` (Forest) | `#0F6B54` | `#3CB58F` | **Fills**: buttons, CTA panels, always with `on-brand` text |
+| `on-brand` | `#FFFFFF` | `#0D1613` | Text on Forest |
+| `link` | `#0F6B54` | `#6FD0AF` | **Text** in green: links, metrics, step numbers, focus rings |
+| `signal` (Amber) | `#E8A33D` | `#F0B357` | **Fills only**: pills, highlights, "Contacted" status, the J |
+| `on-signal` | `#10201C` | `#10201C` | Text on Amber |
 
-Every text pairing passes WCAG AA (4.5:1) in both themes; an automated axe-core scan of the public and admin pages in light and dark is clean. Two rules keep it that way:
+Every text pairing passes WCAG AA (4.5:1) in both themes (lowest: muted on mist, 5.2:1). Two rules keep it that way:
 
-1. **Blue text uses `link`, never `brand`.** One blue can't be both a white-text button fill and readable text on the dark background.
-2. **Signal green is never used for text.** It's 3.1:1 on white; always put Ink text on it.
+1. **Green text uses `link`, never `brand`, and button text uses `on-brand`, never white.** Dark mode uses a lighter green fill with dark text.
+2. **Amber is never used for text.** Always put Pine text on it.
 
 ## Typography
 
@@ -50,8 +52,8 @@ Headings use tight tracking (`tracking-tight`). Body copy at 16–18 px, line he
 
 ## Shape and voice
 
-- Rounded corners: pills for buttons and badges, 16 px for cards, 24 px for large panels.
-- Borders over shadows; the Mist background separates sections.
-- No gradient washes, no stock "AI glow".
+- Rounded corners: pills for badges, 12 px for buttons, 16 px for cards, 24 px for large panels.
+- White cards on the cream page, with a thin border; soft shadows only on floating elements.
+- A faint grid and soft green/amber glow behind the hero only; no gradients on text or buttons.
 - Copy: plain and specific. Say what we build and what it changes; no prices anywhere (every page ends with "Get a quote").
-- Demo projects are always labelled "Demo project" (an outlined Ink badge).
+- Demo projects are always labelled "Demo project" (an outlined Pine badge).

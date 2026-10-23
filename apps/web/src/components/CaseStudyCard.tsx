@@ -16,7 +16,7 @@ export function CaseStudyCard({ study, headingLevel = 3 }: { study: Card; headin
   return (
     <Link
       href={`/work/${study.slug}`}
-      className="flex h-full flex-col rounded-2xl border border-line p-6 transition hover:border-link"
+      className="flex h-full flex-col rounded-2xl border border-line bg-surface p-6 transition hover:border-link"
     >
       <div className="flex flex-wrap items-center gap-2">
         {study.is_demo ? <DemoBadge /> : study.client_name && <span className="text-xs text-muted">{study.client_name}</span>}

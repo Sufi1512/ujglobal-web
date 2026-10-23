@@ -19,9 +19,9 @@ export const SOURCE_LABELS: Record<LeadSource, string> = {
 const STATUS_STYLES: Record<LeadStatus, string> = {
   new: "bg-brand/10 text-link",
   contacted: "bg-signal text-on-signal",
-  qualified: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  qualified: "bg-sky-500/15 text-sky-800 dark:text-sky-300",
   proposal: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
-  won: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  won: "bg-brand text-on-brand",
   lost: "bg-foreground/10 text-muted",
 };
 

@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 // Browser toolbar colour on phones, matching the page background in each theme.
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a1128" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1613" },
   ],
 };
 

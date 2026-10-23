@@ -53,7 +53,7 @@ export default function CookiesPage() {
       </LegalSection>
 
       <LegalSection id="list" title="The cookies we use">
-        <div className="overflow-x-auto rounded-xl border border-line">
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-line bg-mist">
               <tr>

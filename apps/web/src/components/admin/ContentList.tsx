@@ -41,7 +41,7 @@ export function ContentList({
           <h1 className="font-display text-3xl font-semibold">{heading}</h1>
           <p className="mt-1 text-sm text-muted">{description}</p>
         </div>
-        <Link href={newHref} className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:opacity-90">
+        <Link href={newHref} className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-on-brand hover:opacity-90">
           + {newLabel}
         </Link>
       </div>
@@ -52,7 +52,7 @@ export function ContentList({
         </p>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-line">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-line text-xs uppercase tracking-wide text-muted">
             <tr>
@@ -77,7 +77,7 @@ export function ContentList({
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         row.status === "published"
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                          ? "bg-brand/10 text-link"
                           : "bg-foreground/10 text-muted"
                       }`}
                     >
