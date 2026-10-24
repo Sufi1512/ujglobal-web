@@ -20,7 +20,7 @@ export function CtaPanel({
         <div className="pointer-events-none absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-on-brand/10 blur-3xl" aria-hidden />
         <div className="relative grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-center">
           <div>
-            <h2 className="font-display text-4xl font-bold leading-tight sm:text-5xl">{title}</h2>
+            <h2 className="font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-[2.75rem]">{title}</h2>
             <p className="mt-4 max-w-xl text-lg opacity-90">{text}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href={href} className="group inline-flex items-center gap-2 rounded-xl bg-on-brand px-6 py-3.5 font-semibold text-brand transition hover:-translate-y-0.5">

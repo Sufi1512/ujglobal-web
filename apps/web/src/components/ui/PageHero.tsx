@@ -25,7 +25,7 @@ export function PageHero({
         <div className="animate-pop">
           {breadcrumb}
           <Eyebrow>{eyebrow}</Eyebrow>
-          <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold leading-[1.06] tracking-tight sm:text-6xl">{title}</h1>
+          <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-[3.4rem]">{title}</h1>
           {intro && <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">{intro}</p>}
           {children}
         </div>

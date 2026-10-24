@@ -90,6 +90,9 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* Base size 15px instead of the browser's 16px. Every size on the site (text, spacing, buttons, icons)
+     is in rem, so this scales the whole design down a little while keeping its proportions. */
+  font-size: 93.75%;
 }
 
 /* A section that stays dark pine in both themes (the footer). Tokens are re-pointed inside it. */

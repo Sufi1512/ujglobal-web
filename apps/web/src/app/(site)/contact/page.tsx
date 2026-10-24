@@ -24,7 +24,7 @@ export default function ContactPage() {
       <div className="container-site relative grid gap-12 pb-8 pt-12 sm:pt-16 lg:grid-cols-[2fr_3fr]">
         <div className="animate-pop">
           <Eyebrow>Get a quote</Eyebrow>
-          <h1 className="mt-5 font-display text-4xl font-bold leading-[1.06] tracking-tight sm:text-6xl">Let&apos;s build something good.</h1>
+          <h1 className="mt-5 font-display text-4xl font-bold leading-[1.06] tracking-tight sm:text-5xl lg:text-[3.4rem]">Let&apos;s build something good.</h1>
           <p className="mt-6 text-lg text-muted">
             Every project is priced to its scope, so tell us what you have in mind. A few lines is enough to start.
           </p>
