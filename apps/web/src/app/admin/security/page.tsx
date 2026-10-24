@@ -2,6 +2,7 @@
 
 import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { homeFor, useAdminSession } from "@/components/admin/AdminSession";
 import { ApiError, type MfaSetup, adminApi } from "@/lib/admin/api";
@@ -12,6 +13,7 @@ import { ApiError, type MfaSetup, adminApi } from "@/lib/admin/api";
  */
 export default function SecurityPage() {
   const { user, setUser } = useAdminSession();
+  const router = useRouter();
   const [setup, setSetup] = useState<MfaSetup | null>(null);
   const [codes, setCodes] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +53,12 @@ export default function SecurityPage() {
     setBusy(false);
   }
 
+  // Two-factor is already on (enableMfa saved it); Done just leaves the codes screen for the admin.
   function finish() {
-    if (user) setUser({ ...user, mfa_enabled: true });
+    if (!user) return;
+    setUser({ ...user, mfa_enabled: true });
+    setCodes(null);
+    router.push(homeFor(user.role));
   }
 
   const card = "rounded-xl border border-line bg-surface p-6";
