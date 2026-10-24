@@ -20,6 +20,8 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=9006 HOSTNAME=0.0.0.0
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
+# Next.js keeps its page cache in .next/cache at runtime: the node user must be able to write there.
+RUN mkdir -p .next/cache && chown -R node:node .next
 USER node
 EXPOSE 9006
 CMD ["node", "server.js"]

@@ -88,11 +88,11 @@ jobs:
           bash infra/server/gen-secrets.sh >> .env
           docker compose config --format json > /tmp/live.json
           # Every container shares the server's network (so localhost in DATABASE_URL is the server) and
-          # publishes nothing; the gateway binds 127.0.0.1:9005 by default. The API gets the database
+          # publishes nothing; the gateway binds 127.0.0.1:9006 by default. The API gets the database
           # settings, and the website gets no secrets.
           jq -e '[.services[] | .network_mode] | all(. == "host")' /tmp/live.json
           jq -e '[.services[] | select(.ports)] == []' /tmp/live.json
-          jq -e '.services.gateway.environment == {"PUBLIC_BIND": "127.0.0.1", "PUBLIC_PORT": "9005"}' /tmp/live.json
+          jq -e '.services.gateway.environment == {"PUBLIC_BIND": "127.0.0.1", "PUBLIC_PORT": "9006"}' /tmp/live.json
           jq -e '.services.api.environment.DATABASE_URL | startswith("postgresql+asyncpg://")' /tmp/live.json
           jq -e '.services.web.environment | has("JWT_SECRET") | not' /tmp/live.json
           jq -e '.services | has("postgres") | not' /tmp/live.json

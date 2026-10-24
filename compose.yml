@@ -5,8 +5,8 @@
 #
 # Every container uses the server's own network (network_mode: host), so `localhost` in DATABASE_URL is
 # this server, as for an app run without Docker. Each one listens on 127.0.0.1 only:
-#   gateway  PUBLIC_BIND:PUBLIC_PORT (default 127.0.0.1:9005), the one port your panel points the domain at
-#   web      127.0.0.1:9006     api  127.0.0.1:9007     redis  127.0.0.1:6380
+#   gateway  PUBLIC_BIND:PUBLIC_PORT (default 127.0.0.1:9006), the one port your panel points the domain at
+#   web      127.0.0.1:9007     api  127.0.0.1:9005     redis  127.0.0.1:6380
 # The gateway sends /v1/* and /health to the API and everything else to the website, on one domain.
 # No Postgres container: the API and worker use your existing PostgreSQL (DATABASE_URL), and the API
 # creates the database there on first start if it's missing.
@@ -29,10 +29,10 @@ services:
     network_mode: host
     # 127.0.0.1 by default: only your hosting panel on this server can reach it, never the internet
     # directly. Set PUBLIC_BIND=0.0.0.0 only if the panel connects over the network, and then allow the
-    # port from the panel's address alone. Without these the Caddyfile's defaults apply (127.0.0.1:9005).
+    # port from the panel's address alone. Without these the Caddyfile's defaults apply (127.0.0.1:9006).
     environment:
       PUBLIC_BIND: ${PUBLIC_BIND:-127.0.0.1}
-      PUBLIC_PORT: ${PUBLIC_PORT:-9005}
+      PUBLIC_PORT: ${PUBLIC_PORT:-9006}
     depends_on:
       web: { condition: service_healthy }
       api: { condition: service_healthy }
@@ -54,7 +54,7 @@ services:
     environment:
       REVALIDATE_SECRET: ${REVALIDATE_SECRET}
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9006/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9007/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -84,7 +84,7 @@ services:
       CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
       ADMIN_BASE_URL: ${SITE_URL}
       COOKIE_SECURE: "true"
-      WEB_REVALIDATE_URL: http://127.0.0.1:9006/api/revalidate
+      WEB_REVALIDATE_URL: http://127.0.0.1:9007/api/revalidate
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
@@ -94,7 +94,7 @@ services:
       LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9007/health', timeout=4).status == 200 else 1)"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9005/health', timeout=4).status == 200 else 1)"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -125,7 +125,7 @@ services:
       CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
       ADMIN_BASE_URL: ${SITE_URL}
       COOKIE_SECURE: "true"
-      WEB_REVALIDATE_URL: http://127.0.0.1:9006/api/revalidate
+      WEB_REVALIDATE_URL: http://127.0.0.1:9007/api/revalidate
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}

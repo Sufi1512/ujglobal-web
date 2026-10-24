@@ -1,18 +1,18 @@
-# Deploying the live site: one port (9005), your existing PostgreSQL
+# Deploying the live site: website on port 9006, API on 9005, your existing PostgreSQL
 
-The root `compose.yml` is the live site. Point your hosting panel's domain at **port 9005** and it serves everything: website, API and admin. It uses **the PostgreSQL you already have**; it doesn't start its own database and doesn't use port 5432.
+The root `compose.yml` is the live site. Point your hosting panel's domain at **port 9006** and it serves everything: website, API and admin. The API itself listens on **127.0.0.1:9005** (handy for `curl http://127.0.0.1:9005/health` on the server). It uses **the PostgreSQL you already have**; it doesn't start its own database and doesn't use port 5432.
 
 | Request on `https://your-domain` | Goes to |
 | --- | --- |
-| `/v1/...` and `/health` | API (container port 9005) |
-| everything else (`/`, `/services`, `/admin`, ...) | website (container port 9006) |
-| `/api/revalidate` | refused (404); only the worker uses it, from inside Docker |
+| `/v1/...` and `/health` | API (127.0.0.1:9005) |
+| everything else (`/`, `/services`, `/admin`, ...) | website (127.0.0.1:9007, internal) |
+| `/api/revalidate` | refused (404); only the worker uses it, directly on 127.0.0.1 |
 
 ```text
-Visitor -> hosting panel (HTTPS, domain) -> 127.0.0.1:9005 -> gateway (Caddy) --+--> /v1/*  -> API     :9005 --+
-                                                                                 +--> others -> website :9006    |
+Visitor -> hosting panel (HTTPS, domain) -> 127.0.0.1:9006 -> gateway (Caddy) --+--> /v1/*  -> API     :9005 --+
+                                                                                 +--> others -> website :9007    |
                                                        your existing PostgreSQL (DATABASE_URL) <-- API, worker --+
-                                                       Redis: inside the stack, no published port
+                                                       Redis: 127.0.0.1:6380, only for the API and worker
 ```
 
 The website and API share the domain, so the browser calls the API on the same address: no CORS setup, and the admin's sign-in cookie stays first-party. Images are built on the server from this repository; nothing comes from a registry.
@@ -38,7 +38,7 @@ nano .env
 | `DATABASE_ADMIN_URL` | optional, see step 2 |
 | `JWT_SECRET`, `IP_HASH_SALT`, `REVALIDATE_SECRET`, `MFA_ENCRYPTION_KEY` | the four lines from `gen-secrets.sh`. Keep `MFA_ENCRYPTION_KEY` the same forever |
 | `SMTP_*`, `EMAIL_FROM`, `LEAD_ALERT_RECIPIENTS` | alerts go to `hello@ujglobal.tech` by default. Replace `SMTP_HOST` and `SMTP_PASSWORD` for the service that hosts that mailbox (Google Workspace, Zoho, Hostinger, Microsoft 365 or Resend: the example lists each one's settings), or set `LEAD_ALERT_RECIPIENTS=[]` to switch alerts off for now. The API won't start with the example's `REPLACE_...` values while alerts are on |
-| `PUBLIC_PORT` | `9005` (default), the port your panel points the domain at |
+| `PUBLIC_PORT` | `9006` (default), the port your panel points the domain at |
 | `PUBLIC_BIND` | `127.0.0.1` (default). `0.0.0.0` only if the panel connects from another machine or can't reach 127.0.0.1; then allow the port from the panel's address alone |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | optional: Cloudflare's human check on the contact form |
 
@@ -56,7 +56,7 @@ On every start the API checks the PostgreSQL in `DATABASE_URL` (13 or newer), **
 - **Without an admin URL:** create the user once, allowed to create its own database: `CREATE USER ujglobal WITH PASSWORD '...' CREATEDB;`. The API creates the database.
 - **Or** create both yourself (`CREATE DATABASE ujglobal OWNER ujglobal;`); the API sees they exist and carries on.
 
-How the site reaches your PostgreSQL: the site's containers share the server's own network, so `localhost` in the URLs means this server, exactly like an app run without Docker. They listen on 127.0.0.1 only: 9005 (gateway, `PUBLIC_PORT`), 9006 (website), 9007 (API) and 6380 (Redis), so those ports must be free.
+How the site reaches your PostgreSQL: the site's containers share the server's own network, so `localhost` in the URLs means this server, exactly like an app run without Docker. They listen on 127.0.0.1 only: 9006 (the site, `PUBLIC_PORT`), 9005 (API), 9007 (website, internal) and 6380 (Redis), so those ports must be free.
 
 | Your PostgreSQL runs... | Host in the URLs | Also needed |
 | --- | --- | --- |
@@ -75,9 +75,9 @@ docker compose logs api | head         # "Database ready (created database ujglo
 curl -s http://127.0.0.1:9005/health   # {"status":"ok"}
 ```
 
-## 4. Point the domain at port 9005
+## 4. Point the domain at port 9006
 
-In your hosting panel, map the domain, with HTTPS on, to **port 9005** on this server. If Cloudflare is in front, add Cloudflare's IP ranges to `trusted_proxies` in `infra/single-port/Caddyfile` so visitor addresses (used for the sign-in and contact limits) come through correctly.
+In your hosting panel, map the domain, with HTTPS on, to **port 9006** on this server. If Cloudflare is in front, add Cloudflare's IP ranges to `trusted_proxies` in `infra/single-port/Caddyfile` so visitor addresses (used for the sign-in and contact limits) come through correctly.
 
 ## 5. First sign-in
 
@@ -107,5 +107,5 @@ Sign in at `https://your-domain/admin`. Owners and sales users set up two-factor
 | `additional property ... is not allowed` (e.g. on `env_file`) | Docker Compose is older than 2.24: update Docker |
 | API keeps restarting; logs say `Could not reach PostgreSQL` or `password authentication failed` | Check the host and password in `DATABASE_URL` (and `DATABASE_ADMIN_URL`), and the PostgreSQL settings in step 2. |
 | Logs say `isn't allowed to create it` | Set `DATABASE_ADMIN_URL`, give the user `CREATEDB`, or create the database once (step 2) |
-| `port is already allocated` on 9005 | Something else uses 9005: change `PUBLIC_PORT` and point the domain at that port instead |
-| Panel shows "bad gateway" | The panel can't reach 127.0.0.1:9005: set `PUBLIC_BIND=0.0.0.0` and firewall the port to the panel only |
+| `address already in use` on 9006 | Something else uses 9006: change `PUBLIC_PORT` and point the domain at that port instead. Ports 9005, 9007 and 6380 must be free too |
+| Panel shows "bad gateway" | The panel can't reach 127.0.0.1:9006: set `PUBLIC_BIND=0.0.0.0` and firewall the port to the panel only |
