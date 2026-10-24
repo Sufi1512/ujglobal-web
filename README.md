@@ -109,14 +109,14 @@ Then sign in at http://localhost:9006/admin. Roles are `owner`, `editor` and `sa
 Two ways to run it on your own server; GitHub only tests the code and never deploys:
 
 - **One port** (`compose.yml`, simplest, for hosting panels that map a domain to a single port): the whole
-  site answers on port 9005, a built-in reverse proxy routes `/v1/*` to the API and everything else to the
+  site answers on port 9006 (API on 9005), a built-in reverse proxy routes `/v1/*` to the API and everything else to the
   website, and it uses your existing PostgreSQL. See [docs/DEPLOY-SINGLE-PORT.md](docs/DEPLOY-SINGLE-PORT.md).
 - **Full setup**: production and staging side by side behind Cloudflare, with a shared Caddy on ports
   80/443, backups and a firewall. See [docs/DEPLOY.md](docs/DEPLOY.md).
 
 | Path | What |
 | --- | --- |
-| `compose.yml` + `.env` | The live site: one port (9005), built on the server, using your PostgreSQL (routing in `infra/single-port/`) |
+| `compose.yml` + `.env` | The live site: one port (9006; API on 9005), built on the server, using your PostgreSQL (routing in `infra/single-port/`) |
 | `compose.dev.yml` + `.env.local` | Local development, with its own Postgres, Redis and Mailpit (stack in `infra/compose.local.yml`) |
 | `infra/compose.app.yml` | One stack (web, api, worker, Postgres, Redis); used for production and staging |
 | `infra/edge/` | The shared Caddy in front of both stacks |
