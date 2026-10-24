@@ -90,7 +90,7 @@ export default async function CaseStudyPage({ params }: Props) {
             {study.results.map((r, i) => (
               <Reveal key={r.label} delay={i * 100} className="flex flex-col rounded-3xl bg-brand p-8 text-on-brand">
                 <dt className="mt-2 opacity-90">{r.label}</dt>
-                <dd className="order-first font-display text-5xl font-bold">{r.metric}</dd>
+                <dd className="order-first font-display text-4xl font-bold sm:text-5xl">{r.metric}</dd>
               </Reveal>
             ))}
           </dl>

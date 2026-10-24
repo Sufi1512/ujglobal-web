@@ -119,7 +119,7 @@ export default async function Home() {
               <span className="h-2 w-2 rounded-full bg-brand animate-pulse-ring" aria-hidden />
               Technology consultancy · Worldwide
             </p>
-            <h1 className="animate-pop mt-6 font-display text-[2.6rem] font-bold leading-[1.04] tracking-tight [animation-delay:80ms] sm:text-6xl lg:text-[4.1rem]">
+            <h1 className="animate-pop mt-6 font-display text-[2.4rem] font-bold leading-[1.04] tracking-tight [animation-delay:80ms] sm:text-5xl lg:text-[3.7rem]">
               Websites, apps and <span className="text-link">AI</span> that move your business{" "}
               <span className="relative whitespace-nowrap">
                 <span className="relative z-10">forward.</span>

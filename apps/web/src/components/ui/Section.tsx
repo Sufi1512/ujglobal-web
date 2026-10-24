@@ -30,7 +30,7 @@ export function SectionHeading({
     <Reveal className={`flex flex-wrap items-end justify-between gap-6 ${centered ? "flex-col items-center text-center" : ""}`}>
       <div className={centered ? "mx-auto max-w-2xl" : "max-w-2xl"}>
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h2 id={id} className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl">
+        <h2 id={id} className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
           {title}
         </h2>
         {intro && <p className="mt-4 text-lg text-muted">{intro}</p>}
