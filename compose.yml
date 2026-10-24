@@ -30,9 +30,11 @@ services:
     # 127.0.0.1 by default: only your hosting panel on this server can reach it, never the internet
     # directly. Set PUBLIC_BIND=0.0.0.0 only if the panel connects over the network, and then allow the
     # port from the panel's address alone. Without these the Caddyfile's defaults apply (127.0.0.1:9006).
+    # The port is the panel's own "host port" (HTTP_PORT) when it sets one, so a leftover PUBLIC_PORT
+    # can't point the gateway somewhere else; then PUBLIC_PORT; then 9006. Never 9005: that's the API.
     environment:
       PUBLIC_BIND: ${PUBLIC_BIND:-127.0.0.1}
-      PUBLIC_PORT: ${PUBLIC_PORT:-9006}
+      PUBLIC_PORT: ${HTTP_PORT:-${PUBLIC_PORT:-9006}}
     depends_on:
       web: { condition: service_healthy }
       api: { condition: service_healthy }
