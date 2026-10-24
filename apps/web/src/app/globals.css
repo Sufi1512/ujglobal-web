@@ -222,6 +222,167 @@ html.js .reveal.is-in {
   animation-play-state: paused;
 }
 
+/* Motion for the illustrated scenes (components/illustrations/Scenes.tsx). */
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ping-svg {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@keyframes travel {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes point {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-9deg);
+  }
+}
+@keyframes nod {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2.5px);
+  }
+}
+@keyframes note-move {
+  0%,
+  22% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  40%,
+  58% {
+    transform: translate(115px, 0);
+  }
+  76%,
+  86% {
+    transform: translate(230px, 0);
+    opacity: 1;
+  }
+  94% {
+    transform: translate(230px, 0);
+    opacity: 0;
+  }
+  95% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+@keyframes sweep {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  8%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(364px);
+    opacity: 0;
+  }
+}
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes meridian {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+}
+.svg-meridian {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: meridian 20s ease-in-out infinite;
+}
+.svg-travel {
+  transform-box: view-box;
+}
+.animate-orbit {
+  animation: orbit 70s linear infinite;
+}
+.animate-orbit-reverse {
+  animation: orbit 70s linear infinite reverse;
+}
+.svg-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ping-svg 2.4s ease-out infinite;
+}
+.svg-travel {
+  animation: travel 3.2s ease-in-out infinite;
+}
+.svg-sway {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: sway 4s ease-in-out infinite;
+}
+.svg-point {
+  transform-box: view-box;
+  animation: point 3s ease-in-out infinite;
+}
+.svg-nod {
+  animation: nod 3.6s ease-in-out infinite;
+}
+.svg-note-move {
+  animation: note-move 9s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+.svg-sweep {
+  animation: sweep 5s ease-in-out 1.5s infinite;
+}
+.svg-glow {
+  animation: glow 2.6s ease-in-out infinite;
+}
+
 /* People who ask for less motion get none: no scroll fades, loops or smooth scrolling. */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -231,6 +392,19 @@ html.js .reveal.is-in {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+  .svg-travel,
+  .svg-sweep {
+    display: none;
+  }
+  .svg-meridian:nth-of-type(1) {
+    transform: scaleX(0.38);
+  }
+  .svg-meridian:nth-of-type(2) {
+    transform: scaleX(0.76);
+  }
+  .svg-meridian:nth-of-type(3) {
+    transform: scaleX(0.01);
   }
   *,
   *::before,

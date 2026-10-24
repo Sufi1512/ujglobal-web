@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarCheck, KeyRound, MessagesSquare, SearchCheck, UsersRound } from "lucide-react";
+import { ArrowRight, CalendarCheck, FileText, KeyRound, MessagesSquare, MonitorPlay, SearchCheck, Users, UsersRound, Video } from "lucide-react";
 import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { CaseStudyCard } from "@/components/CaseStudyCard";
@@ -11,6 +11,7 @@ import { Marquee } from "@/components/ui/Marquee";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/Section";
 import { ServiceVisual } from "@/components/visuals/ServiceVisual";
+import { GlobeScene } from "@/components/illustrations/Scenes";
 import { serviceLook, TOOLS } from "@/lib/catalog";
 import { getCaseStudies, getServices } from "@/lib/content";
 import { site } from "@/lib/site";
@@ -90,6 +91,13 @@ const faqs: FaqItem[] = [
     answer:
       "You get a handover with documentation and access to everything. If you want us to stay on, we offer monthly support for fixes, improvements, SEO and new features.",
   },
+];
+
+const worldwide = [
+  { icon: Video, title: "Calls in your hours", text: "Meetings booked in your working day, not ours." },
+  { icon: FileText, title: "Everything written down", text: "Decisions, scope and progress shared in plain English." },
+  { icon: MonitorPlay, title: "Weekly demos", text: "Working software on a private link you can open anywhere." },
+  { icon: Users, title: "One point of contact", text: "A named lead who knows your project from day one." },
 ];
 
 export default async function Home() {
@@ -239,6 +247,32 @@ export default async function Home() {
           </ul>
         </section>
       )}
+
+      {/* Worldwide */}
+      <section aria-labelledby="world-heading" className="relative overflow-hidden border-y border-line bg-mist py-24">
+        <div className="container-site grid items-center gap-14 lg:grid-cols-2">
+          <div>
+            <SectionHeading
+              id="world-heading"
+              eyebrow="Worldwide"
+              title="A remote team that works in your time zone"
+              intro="We work with clients wherever they are. You get the same senior team, the same weekly demos and the same clear updates, whether you're next door or eight hours away."
+            />
+            <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+              {worldwide.map((w, i) => (
+                <Reveal as="li" key={w.title} delay={i * 80} className="rounded-2xl border border-line bg-surface p-5">
+                  <w.icon className="h-5 w-5 text-link" aria-hidden />
+                  <h3 className="mt-3 font-semibold">{w.title}</h3>
+                  <p className="mt-1 text-sm text-muted">{w.text}</p>
+                </Reveal>
+              ))}
+            </ul>
+          </div>
+          <Reveal delay={120}>
+            <GlobeScene />
+          </Reveal>
+        </div>
+      </section>
 
       {/* Process */}
       <section aria-labelledby="process-heading" className="container-site py-24">

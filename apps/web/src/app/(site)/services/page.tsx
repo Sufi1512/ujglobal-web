@@ -5,6 +5,7 @@ import { CtaPanel } from "@/components/CtaPanel";
 import { PageHero } from "@/components/ui/PageHero";
 import { Reveal } from "@/components/ui/Reveal";
 import { ServiceVisual } from "@/components/visuals/ServiceVisual";
+import { ServiceOrbit } from "@/components/illustrations/Scenes";
 import { serviceLook } from "@/lib/catalog";
 import { getServices } from "@/lib/content";
 
@@ -22,6 +23,7 @@ export default async function ServicesPage() {
         eyebrow="Services"
         title="Everything you need to build, launch and grow"
         intro="One team for strategy, design, engineering, AI and growth, so nothing gets lost between agencies."
+        aside={<ServiceOrbit slugs={services.map((s) => s.slug)} />}
       >
         <ul className="mt-8 flex flex-wrap gap-2" aria-label="Jump to a service">
           {services.map((s) => {

@@ -9,7 +9,8 @@ import { CtaPanel } from "@/components/CtaPanel";
 import { PageHero } from "@/components/ui/PageHero";
 import { Reveal } from "@/components/ui/Reveal";
 import { ServiceVisual } from "@/components/visuals/ServiceVisual";
-import { projectCover } from "@/lib/catalog";
+import { GrowthScene } from "@/components/illustrations/Scenes";
+import { projectCover, serviceLook } from "@/lib/catalog";
 import { getCaseStudies, getCaseStudy } from "@/lib/content";
 import { site } from "@/lib/site";
 
@@ -32,6 +33,8 @@ export default async function CaseStudyPage({ params }: Props) {
   const [study, all] = await Promise.all([load((await params).slug), getCaseStudies()]);
   if (!study) notFound();
   const more = all.filter((s) => s.slug !== study.slug).slice(0, 3);
+  const cover = projectCover(study.slug);
+  const second = study.services.map((s) => serviceLook(s.slug).visual).find((v) => v !== cover && v !== "generic") ?? "design";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -56,7 +59,7 @@ export default async function CaseStudyPage({ params }: Props) {
         eyebrow={study.is_demo ? "Demo project" : (study.client_name ?? "Case study")}
         title={study.title}
         intro={study.summary}
-        aside={<ServiceVisual kind={projectCover(study.slug)} />}
+        aside={<ServiceVisual kind={cover} />}
       >
         <div className="mt-6 flex flex-wrap items-center gap-2">
           {study.is_demo && <DemoBadge />}
@@ -116,6 +119,24 @@ export default async function CaseStudyPage({ params }: Props) {
           )}
         </section>
       )}
+
+      <section aria-labelledby="inside-heading" className="container-site py-8">
+        <h2 id="inside-heading" className="font-display text-2xl font-bold tracking-tight">
+          Inside the project
+        </h2>
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <Reveal as="figure" className="relative flex flex-col justify-between gap-6 rounded-3xl bg-mist p-6 sm:p-10">
+            <div className="bg-grid pointer-events-none absolute inset-0 rounded-3xl opacity-50" aria-hidden />
+            <div className="relative grid flex-1 place-items-center"><ServiceVisual kind={second} className="w-full" /></div>
+            <figcaption className="relative text-sm text-muted">Key screens, designed and built by the same team.</figcaption>
+          </Reveal>
+          <Reveal as="figure" delay={100} className="relative flex flex-col justify-between gap-6 rounded-3xl bg-mist p-6 sm:p-10">
+            <div className="bg-grid pointer-events-none absolute inset-0 rounded-3xl opacity-50" aria-hidden />
+            <div className="relative grid flex-1 place-items-center"><GrowthScene className="w-full" /></div>
+            <figcaption className="relative text-sm text-muted">Results tracked from launch day, shared in a simple weekly report.</figcaption>
+          </Reveal>
+        </div>
+      </section>
 
       {study.tech_stack.length > 0 && (
         <section aria-labelledby="stack-heading" className="container-site py-8">

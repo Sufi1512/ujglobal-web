@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CaseStudyCard, DemoBadge, ProjectCover } from "@/components/CaseStudyCard";
 import { CtaPanel } from "@/components/CtaPanel";
+import { WorkCollage } from "@/components/illustrations/Scenes";
 import { PageHero } from "@/components/ui/PageHero";
 import { Reveal } from "@/components/ui/Reveal";
 import { getCaseStudies, getServices } from "@/lib/content";
@@ -31,6 +32,7 @@ export default async function WorkPage({ searchParams }: Props) {
       <PageHero
         eyebrow="Work"
         title="Products we've designed and built"
+        aside={<WorkCollage />}
         intro={
           <>
             Websites, apps, AI assistants and automation, with the results they deliver.
