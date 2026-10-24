@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { CaseStudyCard } from "@/components/CaseStudyCard";
 import { CtaPanel } from "@/components/CtaPanel";
-import { HeroShowcase } from "@/components/home/HeroShowcase";
+import { HeroVisual } from "@/components/home/HeroVisual";
 import { ProcessSteps, type Step } from "@/components/home/ProcessSteps";
 import { ServiceExplorer } from "@/components/home/ServiceExplorer";
 import { FaqList, faqJsonLd, type FaqItem } from "@/components/ui/FaqList";
@@ -105,7 +105,7 @@ export default async function Home() {
         <div className="bg-grid pointer-events-none absolute inset-0 opacity-70" aria-hidden />
         <div className="glow-brand pointer-events-none absolute -right-40 -top-40 h-[760px] w-[760px]" aria-hidden />
         <div className="glow-signal pointer-events-none absolute -left-48 top-[420px] h-[560px] w-[560px]" aria-hidden />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:pb-28">
+        <div className="container-site relative grid items-center gap-14 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:pb-28">
           <div>
             <p className="animate-pop inline-flex items-center gap-2.5 rounded-full border border-line bg-surface/80 px-4 py-1.5 text-sm text-muted backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-brand animate-pulse-ring" aria-hidden />
@@ -151,7 +151,7 @@ export default async function Home() {
             </dl>
           </div>
           <div className="animate-pop [animation-delay:200ms]">
-            <HeroShowcase />
+            <HeroVisual />
           </div>
         </div>
       </section>
@@ -163,7 +163,7 @@ export default async function Home() {
       </section>
 
       {/* Services */}
-      <section aria-labelledby="services-heading" className="mx-auto max-w-6xl px-4 py-24">
+      <section aria-labelledby="services-heading" className="container-site py-24">
         <SectionHeading
           id="services-heading"
           eyebrow="What we build"
@@ -185,7 +185,7 @@ export default async function Home() {
 
       {/* Why us */}
       <section aria-labelledby="why-heading" className="bg-mist py-24">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="container-site">
           <SectionHeading id="why-heading" eyebrow="Why UJ Global" title="A partner, not just a vendor" />
           <div className="mt-12 grid gap-4 lg:grid-cols-3">
             <Reveal className="relative overflow-hidden rounded-3xl bg-brand p-8 text-on-brand lg:row-span-2">
@@ -218,7 +218,7 @@ export default async function Home() {
 
       {/* Work */}
       {featured.length > 0 && (
-        <section aria-labelledby="work-heading" className="mx-auto max-w-6xl px-4 py-24">
+        <section aria-labelledby="work-heading" className="container-site py-24">
           <SectionHeading
             id="work-heading"
             eyebrow="Selected work"
@@ -241,7 +241,7 @@ export default async function Home() {
       )}
 
       {/* Process */}
-      <section aria-labelledby="process-heading" className="mx-auto max-w-6xl px-4 py-24">
+      <section aria-labelledby="process-heading" className="container-site py-24">
         <SectionHeading
           id="process-heading"
           eyebrow="How we work"
@@ -254,7 +254,7 @@ export default async function Home() {
       </section>
 
       {/* FAQ */}
-      <section aria-labelledby="faq-heading" className="mx-auto grid max-w-6xl gap-12 px-4 py-24 lg:grid-cols-[2fr_3fr]">
+      <section aria-labelledby="faq-heading" className="container-site grid gap-12 py-24 lg:grid-cols-[2fr_3fr]">
         <div>
           <SectionHeading id="faq-heading" eyebrow="Questions" title="Good to know" />
           <Reveal className="mt-6 text-muted">

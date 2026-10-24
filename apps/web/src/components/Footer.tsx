@@ -22,7 +22,7 @@ const companyLinks = [
 export function Footer() {
   return (
     <footer className="ink-scope mt-24 border-t border-line bg-background text-foreground">
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="container-site">
         <div className="grid gap-10 pb-12 pt-14 sm:grid-cols-2 lg:grid-cols-[2fr_1.4fr_1fr_1.4fr]">
           <div>
             <Logo />

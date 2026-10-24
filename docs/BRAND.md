@@ -36,6 +36,8 @@ Files: `apps/web/src/app/icon.svg` (browsers), `favicon.ico` (16/32/48 px), `app
 | `signal` (Amber) | `#E8A33D` | `#F0B357` | **Fills only**: pills, highlights, "Contacted" status, the J |
 | `on-signal` | `#10201C` | `#10201C` | Text on Amber |
 
+The site opens in **light**; visitors can switch to dark with the sun/moon button in the header, and the choice is remembered on their device (it doesn't follow the device's own setting).
+
 Every text pairing passes WCAG AA (4.5:1) in both themes (lowest: muted on mist, 5.2:1). Two rules keep it that way:
 
 1. **Green text uses `link`, never `brand`, and button text uses `on-brand`, never white.** Dark mode uses a lighter green fill with dark text.
