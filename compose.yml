@@ -3,10 +3,13 @@
 #
 #   docker compose up -d --build
 #
-# Only the `gateway` publishes a port: PUBLIC_PORT (default 9005), on 127.0.0.1 unless PUBLIC_BIND says
-# otherwise. It sends /v1/* and /health to the API and everything else to the website, on one domain.
+# Every container uses the server's own network (network_mode: host), so `localhost` in DATABASE_URL is
+# this server, as for an app run without Docker. Each one listens on 127.0.0.1 only:
+#   gateway  PUBLIC_BIND:PUBLIC_PORT (default 127.0.0.1:9006), the one port your panel points the domain at
+#   web      127.0.0.1:9007     api  127.0.0.1:9005     redis  127.0.0.1:6380
+# The gateway sends /v1/* and /health to the API and everything else to the website, on one domain.
 # No Postgres container: the API and worker use your existing PostgreSQL (DATABASE_URL), and the API
-# creates the database there on first start if it's missing. Redis runs inside the stack, unpublished.
+# creates the database there on first start if it's missing.
 # One self-contained file on purpose: hosting panels that rewrite compose files often mishandle `include`.
 # The images are built from the repository root and copy in the `.env` next to this file, so the site
 # also works on panels that don't pass environment variables to containers (they're built on your
@@ -23,10 +26,15 @@ services:
     build: { context: ., dockerfile: infra/single-port/gateway.Dockerfile }
     image: ujglobal-gateway:latest
     restart: unless-stopped
+    network_mode: host
     # 127.0.0.1 by default: only your hosting panel on this server can reach it, never the internet
-    # directly (Docker-published ports skip the firewall). Set PUBLIC_BIND=0.0.0.0 only if the panel
-    # connects over the network, and then allow the port from the panel's address alone.
-    ports: ["${PUBLIC_BIND:-127.0.0.1}:${PUBLIC_PORT:-9005}:9005"]
+    # directly. Set PUBLIC_BIND=0.0.0.0 only if the panel connects over the network, and then allow the
+    # port from the panel's address alone. Without these the Caddyfile's defaults apply (127.0.0.1:9006).
+    # The port is the panel's own "host port" (HTTP_PORT) when it sets one, so a leftover PUBLIC_PORT
+    # can't point the gateway somewhere else; then PUBLIC_PORT; then 9006. Never 9005: that's the API.
+    environment:
+      PUBLIC_BIND: ${PUBLIC_BIND:-127.0.0.1}
+      PUBLIC_PORT: ${HTTP_PORT:-${PUBLIC_PORT:-9006}}
     depends_on:
       web: { condition: service_healthy }
       api: { condition: service_healthy }
@@ -43,13 +51,12 @@ services:
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
     image: ujglobal-web:latest
     restart: unless-stopped
-    # Only what the website needs; none of the API's secrets.
+    network_mode: host
+    # Only what the website needs; none of the API's secrets. Address and port are built into the image.
     environment:
-      API_INTERNAL_URL: http://api:9005
       REVALIDATE_SECRET: ${REVALIDATE_SECRET}
-    expose: ["9006"]
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9006/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9007/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -62,15 +69,16 @@ services:
     build: { context: ., dockerfile: infra/single-port/api.Dockerfile }
     image: ujglobal-api:latest
     restart: unless-stopped
+    network_mode: host
     # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
     env_file: [{ path: .env, required: false }]
     # Written out in full (no YAML anchors): some hosting panels drop anchored blocks when they rewrite
     # the file, and the containers then start with no settings at all.
     environment:
       ENVIRONMENT: production
-      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@localhost:5432/ujglobal}
       DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://127.0.0.1:6380/0
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
       IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
@@ -78,7 +86,7 @@ services:
       CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
       ADMIN_BASE_URL: ${SITE_URL}
       COOKIE_SECURE: "true"
-      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
+      WEB_REVALIDATE_URL: http://127.0.0.1:9007/api/revalidate
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
@@ -87,11 +95,6 @@ services:
       EMAIL_FROM: ${EMAIL_FROM:-UJ Global <no-reply@ujglobal.tech>}
       LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
-    # Lets containers reach a PostgreSQL running on this server as host.docker.internal.
-    extra_hosts: ["host.docker.internal:host-gateway"]
-    # `db` is your PostgreSQL container's own network when DB_NETWORK names it (see below).
-    networks: [default, db]
-    expose: ["9005"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:9005/health', timeout=4).status == 200 else 1)"]
       interval: 15s
@@ -107,15 +110,16 @@ services:
     build: { context: ., dockerfile: infra/single-port/worker.Dockerfile }
     image: ujglobal-worker:latest
     restart: unless-stopped
+    network_mode: host
     # Also load .env directly, in case a hosting panel passes it to containers but drops `environment`.
     env_file: [{ path: .env, required: false }]
     # Written out in full (no YAML anchors): some hosting panels drop anchored blocks when they rewrite
     # the file, and the containers then start with no settings at all.
     environment:
       ENVIRONMENT: production
-      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@host.docker.internal:5432/ujglobal}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env or your panel environment variables, e.g. postgresql+asyncpg://ujglobal:PASSWORD@localhost:5432/ujglobal}
       DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:-}
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://127.0.0.1:6380/0
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env or your panel environment variables (infra/server/gen-secrets.sh makes it)}
       IP_HASH_SALT: ${IP_HASH_SALT:?set IP_HASH_SALT in .env or your panel environment variables}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET in .env or your panel environment variables}
@@ -123,7 +127,7 @@ services:
       CORS_ORIGINS: '["${SITE_URL:?set SITE_URL in .env or your panel environment variables, e.g. https://ujglobal.tech}"]'
       ADMIN_BASE_URL: ${SITE_URL}
       COOKIE_SECURE: "true"
-      WEB_REVALIDATE_URL: http://web:9006/api/revalidate
+      WEB_REVALIDATE_URL: http://127.0.0.1:9007/api/revalidate
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
@@ -132,8 +136,6 @@ services:
       EMAIL_FROM: ${EMAIL_FROM:-UJ Global <no-reply@ujglobal.tech>}
       LEAD_ALERT_RECIPIENTS: ${LEAD_ALERT_RECIPIENTS:-[]}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
-    extra_hosts: ["host.docker.internal:host-gateway"]
-    networks: [default, db]
     command: ["arq", "app.workers.main.WorkerSettings"]
     depends_on:
       api: { condition: service_healthy }
@@ -142,21 +144,11 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    network_mode: host
+    # 127.0.0.1:6380 (not 6379) so it can't clash with a Redis already installed on the server.
+    command: ["redis-server", "--bind", "127.0.0.1", "--port", "6380", "--appendonly", "yes"]
     volumes: [redisdata:/data]
-    # No published port: only the API and worker use it.
     logging: { driver: json-file, options: { max-size: "10m", max-file: "5" } }
-
-networks:
-  default:
-  # PostgreSQL in a Docker container whose port isn't published (the panel shows just "5432/tcp"):
-  # set DB_NETWORK to that container's network and use the container's name as the host in
-  # DATABASE_URL, e.g. postgresql+asyncpg://ujglobal:PASSWORD@my-postgres:5432/ujglobal.
-  # The API and worker join that network; your PostgreSQL container isn't changed. Left unset, this is
-  # an empty network of the site's own and nothing changes. Doesn't work with Docker's built-in
-  # "bridge" network: then publish the port as 127.0.0.1:5432:5432 and use host.docker.internal.
-  db:
-    name: ${DB_NETWORK:-ujglobal_db}
 
 volumes:
   redisdata:

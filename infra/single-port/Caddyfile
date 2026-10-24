@@ -1,9 +1,12 @@
-# Single-port gateway: one port (9005) for the whole site, for hosting panels that map a domain to a
+# Single-port gateway: one port (9006) for the whole site, for hosting panels that map a domain to a
 # single port. HTTPS is handled in front of this (by the hosting platform or Cloudflare); this listens
 # on plain HTTP inside the server.
 #
-#   https://your-domain/v1/...  and  /health  -> API     (api:9005)
-#   https://your-domain/...                   -> website (web:9006)
+#   https://your-domain/v1/...  and  /health  -> API     (127.0.0.1:9005)
+#   https://your-domain/...                   -> website (127.0.0.1:9007)
+#
+# All containers share the server's network (compose.yml), so this listens on PUBLIC_BIND:PUBLIC_PORT
+# (default 127.0.0.1:9006) and reaches the others on 127.0.0.1.
 #
 # The website and API share one domain, so the browser calls the API on the same origin: no CORS, and
 # the admin's sign-in cookie stays first-party.
@@ -11,6 +14,7 @@
 {
 	auto_https off
 	admin off
+	default_bind {$PUBLIC_BIND:127.0.0.1}
 	servers {
 		# The hosting platform's proxy (or Docker's) connects from a private address; believe the visitor
 		# address it forwards only from there. Add Cloudflare's ranges here if Cloudflare sits in front.
@@ -19,7 +23,7 @@
 	}
 }
 
-:9005 {
+:{$PUBLIC_PORT:9006} {
 	encode zstd gzip
 
 	header {
@@ -36,7 +40,7 @@
 		format json
 	}
 
-	# The cache-refresh endpoint is only for the worker, which calls the website directly inside Docker.
+	# The cache-refresh endpoint is only for the worker, which calls the website directly on 127.0.0.1.
 	@internal path /api/revalidate /api/revalidate/*
 	handle @internal {
 		respond 404
@@ -48,14 +52,14 @@
 			max_size 64KB
 		}
 		header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
-		reverse_proxy api:9005 {
+		reverse_proxy 127.0.0.1:9005 {
 			# The only address the API believes, overwritten here with the one Caddy verified.
 			header_up X-Real-IP {client_ip}
 		}
 	}
 
 	handle {
-		reverse_proxy web:9006 {
+		reverse_proxy 127.0.0.1:9007 {
 			header_up X-Real-IP {client_ip}
 		}
 	}
