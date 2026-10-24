@@ -30,11 +30,13 @@ RUN SITE="$(read-setting /tmp/settings/.env SITE_URL)"; SITE="${SITE:-https://uj
 
 FROM node:22-alpine AS run
 WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=9006 HOSTNAME=0.0.0.0 API_INTERNAL_URL=http://api:9005
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=9007 HOSTNAME=127.0.0.1 API_INTERNAL_URL=http://127.0.0.1:9005
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 COPY --from=build --chown=root:node /app/settings /app/settings
+# Next.js keeps its page cache in .next/cache at runtime: the node user must be able to write there.
+RUN mkdir -p .next/cache && chown -R node:node .next
 USER node
-EXPOSE 9006
+EXPOSE 9007
 CMD ["sh", "-c", "export REVALIDATE_SECRET=\"${REVALIDATE_SECRET:-$(cat /app/settings/revalidate-secret 2>/dev/null)}\"; exec node server.js"]
