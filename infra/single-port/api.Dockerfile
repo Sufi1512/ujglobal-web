@@ -19,5 +19,5 @@ RUN cd /app/settings && find . -name '.env?*' -delete \
 # chmod -R, not /app/settings/*: the shell's * skips dotfiles, so .env would keep the owner-only mode
 # panels often save it with, and the app user couldn't read it.
 USER app
-EXPOSE 9005
-CMD ["sh", "-c", "python -m app.db_bootstrap && alembic upgrade head && exec gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:9005"]
+EXPOSE 9007
+CMD ["sh", "-c", "python -m app.db_bootstrap && alembic upgrade head && exec gunicorn app.main:app -k uvicorn.workers.UvicornWorker -w 2 -b 127.0.0.1:9007"]
