@@ -87,9 +87,12 @@ jobs:
           grep -vE '^(JWT_SECRET|IP_HASH_SALT|REVALIDATE_SECRET|MFA_ENCRYPTION_KEY)=$' .env.production.example > .env
           bash infra/server/gen-secrets.sh >> .env
           docker compose config --format json > /tmp/live.json
-          # Only the gateway publishes a port (127.0.0.1:9005), the API gets the database settings, and the
-          # website gets no secrets.
-          jq -e '[.services[] | select(.ports) | .ports[] | "\(.host_ip):\(.published)"] == ["127.0.0.1:9005"]' /tmp/live.json
+          # Every container shares the server's network (so localhost in DATABASE_URL is the server) and
+          # publishes nothing; the gateway binds 127.0.0.1:9005 by default. The API gets the database
+          # settings, and the website gets no secrets.
+          jq -e '[.services[] | .network_mode] | all(. == "host")' /tmp/live.json
+          jq -e '[.services[] | select(.ports)] == []' /tmp/live.json
+          jq -e '.services.gateway.environment == {"PUBLIC_BIND": "127.0.0.1", "PUBLIC_PORT": "9005"}' /tmp/live.json
           jq -e '.services.api.environment.DATABASE_URL | startswith("postgresql+asyncpg://")' /tmp/live.json
           jq -e '.services.web.environment | has("JWT_SECRET") | not' /tmp/live.json
           jq -e '.services | has("postgres") | not' /tmp/live.json
@@ -144,7 +147,7 @@ jobs:
           chmod 600 .env  # hosting panels often save it readable by its owner only
           docker build -q -f infra/single-port/api.Dockerfile -t live-api .
           docker run --rm live-api python -c "from app.core.config import get_settings as g; s = g(); \
-            assert s.environment == 'production' and s.redis_url == 'redis://redis:6379/0', s; \
+            assert s.environment == 'production' and s.redis_url == 'redis://127.0.0.1:6380/0', s; \
             assert s.cors_origins == ['https://ci.example'] and s.admin_base_url == 'https://ci.example'; \
             assert s.database_url.startswith('postgresql+asyncpg://'); print('settings OK')"
           docker run --rm live-api sh -c 'ls -A /app/settings' | sort | tr '\n' ' ' | grep -qx '.env defaults.env '
