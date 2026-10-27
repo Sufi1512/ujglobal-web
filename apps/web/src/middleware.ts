@@ -44,7 +44,7 @@ export const config = {
   matcher: [
     {
       // Pages only: not API routes, static files, images or generated icons.
-      source: "/((?!api/|_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|robots.txt|sitemap.xml|opengraph-image|twitter-image).*)",
+      source: "/((?!api/|_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|robots.txt|app-ads.txt|sitemap.xml|opengraph-image|twitter-image).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },
