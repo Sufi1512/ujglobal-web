@@ -2,6 +2,7 @@ import { ArrowUpRight, Clock, Video } from "lucide-react";
 import { BrandMark } from "@/components/Logo";
 import { serviceLook } from "@/lib/catalog";
 import { ServiceVisual } from "@/components/visuals/ServiceVisual";
+import { LiveTime } from "./LiveTime";
 
 /*
  * Larger illustrated scenes, drawn as SVG with the theme colour tokens so they follow light and dark mode,
@@ -29,10 +30,10 @@ function arc(a: { x: number; y: number }, b: { x: number; y: number }) {
 }
 
 const ZONES = [
-  { city: "New York", time: "04:00", pos: "left-0 top-[24%]" },
-  { city: "London", time: "09:00", pos: "left-[34%] top-[2%]" },
-  { city: "Riyadh", time: "12:00", pos: "right-0 top-[30%]" },
-  { city: "Singapore", time: "17:00", pos: "right-[6%] bottom-[16%]" },
+  { city: "New York", tz: "America/New_York", pos: "left-0 top-[24%]" },
+  { city: "London", tz: "Europe/London", pos: "left-[34%] top-[2%]" },
+  { city: "Riyadh", tz: "Asia/Riyadh", pos: "right-0 top-[30%]" },
+  { city: "Singapore", tz: "Asia/Singapore", pos: "right-[6%] bottom-[16%]" },
 ];
 
 export function GlobeScene({ className = "" }: { className?: string }) {
@@ -104,7 +105,7 @@ export function GlobeScene({ className = "" }: { className?: string }) {
           <Clock className="h-3.5 w-3.5 text-link" />
           <span className="text-[11px] leading-tight">
             <span className="block text-muted">{z.city}</span>
-            <span className="font-display text-sm font-bold">{z.time}</span>
+            <LiveTime timeZone={z.tz} className="block font-display text-sm font-bold" />
           </span>
         </div>
       ))}
