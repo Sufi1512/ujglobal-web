@@ -20,8 +20,7 @@ export default function TermsPage() {
     >
       <LegalSection id="about" title="About these terms">
         <p>
-          The website is run by {legal.entityName}, trading as {site.name}, {legal.registeredAddress}. By using the site you
-          agree to these terms. If you don&apos;t agree, please don&apos;t use it.
+          The website and our mobile applications are operated by {legal.entityName} (Individual Developer), trading as {legal.tradeName || site.name}, located in {legal.registeredAddress}. All billing, developer accounts, and services belong to {legal.entityName}. By using the site or downloading and using our applications, you agree to these terms. If you don&apos;t agree, please don&apos;t use them.
         </p>
       </LegalSection>
 
@@ -43,7 +42,7 @@ export default function TermsPage() {
           items={[
             "You agree to follow the applicable terms and community guidelines of the respective platform provider (Google Play or Apple App Store).",
             "Any in-app purchases or subscriptions are securely handled by Google Play Billing or Apple StoreKit. We do not store or process your financial payment details.",
-            "Game assets, puzzle designs, and trademarks belong to UJGLOBAL TECH OPC PRIVATE LIMITED.",
+            "Game assets, puzzle designs, and trademarks belong to UJ Global.",
           ]}
         />
       </LegalSection>
@@ -58,7 +57,7 @@ export default function TermsPage() {
 
       <LegalSection id="ip" title="Our content">
         <p>
-          The text, design, logo and other material on this site belong to {legal.entityName} or are used with permission.
+          The text, design, logo and other material on this site and within our mobile applications belong to {site.name} ({legal.entityName}) or are used with permission.
           You may view the site, link to it and share our pages. Please don&apos;t copy or reuse our material commercially without
           asking us first.
         </p>

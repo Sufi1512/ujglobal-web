@@ -14,9 +14,9 @@ export const site = {
  * business must fill in before launch; `legalPlaceholders()` lists any that remain.
  */
 export const legal = {
-  entityName: "UJGLOBAL TECH OPC PRIVATE LIMITED",
-  registeredAddress:
-    "Elmore A 802 Dosti Planet North, Near Shilphata, Kausa, Mumbra, Thane, Maharashtra 400612, India",
+  entityName: "Sultan Khan",
+  tradeName: "UJ Global",
+  registeredAddress: "Thane, Maharashtra, India",
   governingLaw: "India",
   courts: "Thane / Mumbai, India",
   serverLocation: "Germany",

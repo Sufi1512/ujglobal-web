@@ -26,9 +26,7 @@ export default function PrivacyPage() {
     >
       <LegalSection id="who" title="Who we are">
         <p>
-          {site.name} is the trading name of {legal.entityName}, {legal.registeredAddress} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). We
-          are responsible for (the &ldquo;controller&rdquo; of) the personal data described here. For anything about your
-          data, email {mail}.
+          {site.name} is operated by {legal.entityName} (Individual Developer), located in {legal.registeredAddress} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). All billing, developer accounts, and services belong to {legal.entityName}. We are responsible for (the &ldquo;controller&rdquo; of) the personal data described here. For anything about your data, email {mail}.
         </p>
         <p>This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications (including CubeKing 3D).</p>
       </LegalSection>
