@@ -22,7 +22,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      intro="We collect as little personal data as we can: only what you send us when you get in touch, plus the minimum needed to run and protect the website. We don't sell it, and we don't use advertising or analytics trackers."
+      intro="We collect as little personal data as we can: only what you send us when you get in touch, plus the minimum needed to run the website and support our mobile applications. We do not sell personal data, and we adhere strictly to Google Publisher and platform policies."
     >
       <LegalSection id="who" title="Who we are">
         <p>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           are responsible for (the &ldquo;controller&rdquo; of) the personal data described here. For anything about your
           data, email {mail}.
         </p>
-        <p>This policy covers the website {site.url.replace(/^https?:\/\//, "")} and the enquiries you send through it.</p>
+        <p>This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications (including CubeKing 3D).</p>
       </LegalSection>
 
       <LegalSection id="collect" title="What we collect">
@@ -143,8 +143,47 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="other" title="Children and changes">
-        <p>Our services are for businesses. The site isn&apos;t meant for anyone under 18, and we don&apos;t knowingly collect their data.</p>
+      <LegalSection id="mobile-apps" title="Mobile Applications & In-App Advertising (AdMob)">
+        <p>
+          We publish mobile applications, including <strong>CubeKing 3D</strong>. To keep our apps accessible, we provide free features supported by advertising through <strong>Google AdMob</strong> and Google Mobile Ads SDK.
+        </p>
+        <p>
+          <strong>Advertising &amp; Device Identifiers:</strong>
+        </p>
+        <Bullets
+          items={[
+            "Google AdMob and its advertising partners may process device information, advertising identifiers (such as Google Advertising ID on Android or IDFA on iOS), and general performance data to deliver, measure, and protect advertisements.",
+            "Ads may be personalized or non-personalized based on user preferences and regional consent regulations (e.g., GDPR in Europe, CCPA/CPRA in California, DPDP in India).",
+            "Managing your ad preferences: You can opt out of personalized interest-based advertising or reset your advertising ID at any time in your device settings (Android: Settings > Google > Ads; iOS: Settings > Privacy & Security > Tracking).",
+          ]}
+        />
+        <p>
+          <strong>Camera &amp; On-Device Processing (CubeKing 3D):</strong>
+        </p>
+        <p>
+          CubeKing 3D includes a 3D camera puzzle scanning feature. All camera frames are analyzed entirely on-device in real-time solely to detect colors on physical puzzle cubes. We do not capture, store, record, or transmit camera images, face data, or video frames to any external server.
+        </p>
+        <p>
+          <strong>Analytics &amp; Crash Reporting:</strong>
+        </p>
+        <p>
+          Our mobile apps may integrate Google Firebase (Analytics and Crashlytics) to collect anonymous diagnostic logs and usage statistics. This data is strictly aggregated and used to fix crashes and improve gameplay performance.
+        </p>
+      </LegalSection>
+
+      <LegalSection id="children" title="Children's Privacy & Families Policy">
+        <p>
+          Our consulting website services are oriented towards businesses and adults. However, our mobile games (such as CubeKing 3D) are designed for a general audience and rated suitable for all ages (Everyone).
+        </p>
+        <p>
+          We strictly comply with the Children&apos;s Online Privacy Protection Act (COPPA), GDPR-K, and Google Play Families Policies. We do not knowingly collect personal identifiable information from children under 13 (or under the applicable age of consent in your region).
+        </p>
+        <p>
+          If advertisements are displayed to children or users in child-directed modes, they are strictly non-personalized contextual ads served in compliance with Google&apos;s Families Self-Certified Ads SDK requirements. If you believe a child has provided us with personal information, please contact us at {mail} and we will promptly delete it.
+        </p>
+      </LegalSection>
+
+      <LegalSection id="other" title="Changes to this policy">
         <p>
           If we change how we use personal data, we&apos;ll update this page and its date. See also our{" "}
           <Link href="/cookies" className="text-link underline">

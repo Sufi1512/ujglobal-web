@@ -14,13 +14,14 @@ export const site = {
  * business must fill in before launch; `legalPlaceholders()` lists any that remain.
  */
 export const legal = {
-  entityName: "[Company legal name]",
-  registeredAddress: "[Registered address]",
-  governingLaw: "[Country]",
-  courts: "[City, Country]",
-  serverLocation: "[Country where our server is hosted]",
+  entityName: "UJGLOBAL TECH OPC PRIVATE LIMITED",
+  registeredAddress:
+    "Elmore A 802 Dosti Planet North, Near Shilphata, Kausa, Mumbra, Thane, Maharashtra 400612, India",
+  governingLaw: "India",
+  courts: "Thane / Mumbai, India",
+  serverLocation: "Germany",
   contactEmail: site.email,
-  lastUpdated: "23 October 2026",
+  lastUpdated: "3 November 2026",
   // Must match LEAD_RETENTION_DAYS in the API (730 days).
   leadRetentionMonths: 24,
 };

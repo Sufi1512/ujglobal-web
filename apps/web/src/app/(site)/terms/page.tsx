@@ -16,7 +16,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of use"
-      intro={`These terms cover your use of the ${site.name} website. Work we do for clients is covered separately, by the proposal and contract for each project.`}
+      intro={`These terms cover your use of the ${site.name} website and our mobile applications. Work we do for consulting clients is covered separately, by the proposal and contract for each project.`}
     >
       <LegalSection id="about" title="About these terms">
         <p>
@@ -31,6 +31,19 @@ export default function TermsPage() {
             "What we publish here describes our services in general and isn't an offer to contract.",
             "Scope, timelines and prices are agreed only in a written proposal for your project. A quote becomes binding only when both sides sign the proposal or contract.",
             "We work to keep the site accurate and up to date, but we can't promise it's always complete or free of errors.",
+          ]}
+        />
+      </LegalSection>
+
+      <LegalSection id="mobile" title="Mobile Applications">
+        <p>
+          When installing and using our mobile applications (including CubeKing 3D) from the Google Play Store or Apple App Store:
+        </p>
+        <Bullets
+          items={[
+            "You agree to follow the applicable terms and community guidelines of the respective platform provider (Google Play or Apple App Store).",
+            "Any in-app purchases or subscriptions are securely handled by Google Play Billing or Apple StoreKit. We do not store or process your financial payment details.",
+            "Game assets, puzzle designs, and trademarks belong to UJGLOBAL TECH OPC PRIVATE LIMITED.",
           ]}
         />
       </LegalSection>
