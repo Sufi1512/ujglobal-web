@@ -21,7 +21,7 @@ export const legal = {
   courts: "Thane / Mumbai, India",
   serverLocation: "Germany",
   contactEmail: site.email,
-  lastUpdated: "3 November 2026",
+  lastUpdated: "8 November 2026",
   // Must match LEAD_RETENTION_DAYS in the API (730 days).
   leadRetentionMonths: 24,
 };

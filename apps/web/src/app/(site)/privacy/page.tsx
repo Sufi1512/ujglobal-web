@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         <p>
           {site.name} is operated by {legal.entityName} (Individual Developer), located in {legal.registeredAddress} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). All billing, developer accounts, and services belong to {legal.entityName}. We are responsible for (the &ldquo;controller&rdquo; of) the personal data described here. For anything about your data, email {mail}.
         </p>
-        <p>This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications (including CubeKing 3D).</p>
+        <p>This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications and games (including SkyStack 3D, CubeKing 3D, and ArabiPlay).</p>
       </LegalSection>
 
       <LegalSection id="collect" title="What we collect">
@@ -141,9 +141,9 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="mobile-apps" title="Mobile Applications & In-App Advertising (AdMob)">
+      <LegalSection id="mobile-apps" title="Mobile Applications & In-App Advertising (Google AdMob)">
         <p>
-          We publish mobile applications, including <strong>CubeKing 3D</strong>. To keep our apps accessible, we provide free features supported by advertising through <strong>Google AdMob</strong> and Google Mobile Ads SDK.
+          We publish mobile applications and games, including <strong>SkyStack 3D</strong> and <strong>CubeKing 3D</strong>. To keep our games accessible to everyone, we provide free gameplay features supported by advertising through <strong>Google AdMob</strong> and the Google Mobile Ads SDK.
         </p>
         <p>
           <strong>Advertising &amp; Device Identifiers:</strong>
@@ -155,6 +155,12 @@ export default function PrivacyPage() {
             "Managing your ad preferences: You can opt out of personalized interest-based advertising or reset your advertising ID at any time in your device settings (Android: Settings > Google > Ads; iOS: Settings > Privacy & Security > Tracking).",
           ]}
         />
+        <p>
+          <strong>Gameplay &amp; Local Storage (SkyStack 3D):</strong>
+        </p>
+        <p>
+          SkyStack 3D is a 3D isometric tower stacking arcade game. All high scores, gameplay levels, and audio/haptic preferences are stored locally on your device using local device storage. We do not transmit or store personal gameplay progress on remote servers.
+        </p>
         <p>
           <strong>Camera &amp; On-Device Processing (CubeKing 3D):</strong>
         </p>
@@ -171,7 +177,7 @@ export default function PrivacyPage() {
 
       <LegalSection id="children" title="Children's Privacy & Families Policy">
         <p>
-          Our consulting website services are oriented towards businesses and adults. However, our mobile games (such as CubeKing 3D) are designed for a general audience and rated suitable for all ages (Everyone).
+          Our consulting website services are oriented towards businesses and adults. However, our mobile games (including SkyStack 3D and CubeKing 3D) are designed for a general audience and rated suitable for all ages (Everyone / 3+).
         </p>
         <p>
           We strictly comply with the Children&apos;s Online Privacy Protection Act (COPPA), GDPR-K, and Google Play Families Policies. We do not knowingly collect personal identifiable information from children under 13 (or under the applicable age of consent in your region).

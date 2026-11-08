@@ -36,13 +36,13 @@ export default function TermsPage() {
 
       <LegalSection id="mobile" title="Mobile Applications">
         <p>
-          When installing and using our mobile applications (including CubeKing 3D) from the Google Play Store or Apple App Store:
+          When installing and using our mobile applications (including SkyStack 3D and CubeKing 3D) from the Google Play Store or Apple App Store:
         </p>
         <Bullets
           items={[
             "You agree to follow the applicable terms and community guidelines of the respective platform provider (Google Play or Apple App Store).",
             "Any in-app purchases or subscriptions are securely handled by Google Play Billing or Apple StoreKit. We do not store or process your financial payment details.",
-            "Game assets, puzzle designs, and trademarks belong to UJ Global.",
+            "Game assets, 3D graphics, isometric arcade mechanics, puzzle designs, and trademarks belong to UJ Global (Sultan Khan).",
           ]}
         />
       </LegalSection>
