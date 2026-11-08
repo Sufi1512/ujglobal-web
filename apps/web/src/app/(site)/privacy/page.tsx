@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           {site.name} is operated by {legal.entityName} (Individual Developer), located in {legal.registeredAddress} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). All billing, developer accounts, and services belong to {legal.entityName}. We are responsible for (the &ldquo;controller&rdquo; of) the personal data described here. For anything about your data, email {mail}.
         </p>
         <p>
-          This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications and games (including SkyStack 3D, CubeKing 3D, ArabiPlay, and PhysioAI). For our AI-guided physiotherapy companion, see our dedicated <Link href="/privacy/physio-ai" className="text-link underline font-medium">PhysioAI Privacy Policy</Link>.
+          This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications and games (including SkyStack 3D, CubeKing 3D, ArabiPlay, Slice &amp; Dice, Islamic Ibadah, and PhysioAI). For our AI-guided physiotherapy companion, see our dedicated <Link href="/privacy/physio-ai" className="text-link underline font-medium">PhysioAI Privacy Policy</Link>.
         </p>
       </LegalSection>
 
@@ -145,7 +145,7 @@ export default function PrivacyPage() {
 
       <LegalSection id="mobile-apps" title="Mobile Applications & In-App Advertising (Google AdMob)">
         <p>
-          We publish mobile applications and games, including <strong>SkyStack 3D</strong> and <strong>CubeKing 3D</strong>. To keep our games accessible to everyone, we provide free gameplay features supported by advertising through <strong>Google AdMob</strong> and the Google Mobile Ads SDK.
+          We publish mobile applications and games, including <strong>SkyStack 3D</strong>, <strong>CubeKing 3D</strong>, <strong>Slice &amp; Dice</strong>, <strong>ArabiPlay</strong>, and <strong>Islamic Ibadah</strong>. To keep our games and utilities accessible to everyone, we provide free features supported by advertising through <strong>Google AdMob</strong> and the Google Mobile Ads SDK.
         </p>
         <p>
           <strong>Advertising &amp; Device Identifiers:</strong>

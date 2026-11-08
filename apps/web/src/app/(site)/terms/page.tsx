@@ -36,7 +36,7 @@ export default function TermsPage() {
 
       <LegalSection id="mobile" title="Mobile Applications">
         <p>
-          When installing and using our mobile applications (including SkyStack 3D and CubeKing 3D) from the Google Play Store or Apple App Store:
+          When installing and using our mobile applications and games (including SkyStack 3D, CubeKing 3D, Slice &amp; Dice, ArabiPlay, and Islamic Ibadah) from the Google Play Store or Apple App Store:
         </p>
         <Bullets
           items={[
