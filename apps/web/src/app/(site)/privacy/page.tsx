@@ -28,7 +28,9 @@ export default function PrivacyPage() {
         <p>
           {site.name} is operated by {legal.entityName} (Individual Developer), located in {legal.registeredAddress} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). All billing, developer accounts, and services belong to {legal.entityName}. We are responsible for (the &ldquo;controller&rdquo; of) the personal data described here. For anything about your data, email {mail}.
         </p>
-        <p>This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications and games (including SkyStack 3D, CubeKing 3D, and ArabiPlay).</p>
+        <p>
+          This policy covers the website {site.url.replace(/^https?:\/\//, "")}, the enquiries you send through it, and our mobile applications and games (including SkyStack 3D, CubeKing 3D, ArabiPlay, and PhysioAI). For our AI-guided physiotherapy companion, see our dedicated <Link href="/privacy/physio-ai" className="text-link underline font-medium">PhysioAI Privacy Policy</Link>.
+        </p>
       </LegalSection>
 
       <LegalSection id="collect" title="What we collect">
